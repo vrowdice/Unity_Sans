@@ -1,0 +1,42 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class JumpStateSensor : MonoBehaviour
+{
+    /// <summary>
+    /// 플레이어 컨트롤러 인스턴스
+    /// </summary>
+    private PlayerController m_playerController = null;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
+    }
+
+    /*
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.tag == "Terrain")
+        {
+            m_playerController.IsGroundFlag = true;
+        }
+    }
+    */
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Terrain")  
+        {
+            m_playerController.IsCanJumpFlag = true;
+            m_playerController.IsGroundFlag = true;
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "Terrain")
+        {
+            m_playerController.IsGroundFlag = false;
+        }
+    }
+}

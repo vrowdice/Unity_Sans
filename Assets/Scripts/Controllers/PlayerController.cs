@@ -4,103 +4,259 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Common")]
     /// <summary>
-    /// 점프 힘
+    /// 플레이어 콜리더 위치
     /// </summary>
     [SerializeField]
-    float m_jumpForce = 50.0f;
+    Transform m_viewPlayerTransform;
 
+    [Header("Camera")]
+    /// <summary>
+    /// 플레이어 3인칭 카메라 위치 베이스 위치
+    /// </summary>
+    [SerializeField]
+    Transform m_cameraBaseTransform;
+    /// <summary>
+    /// 마우스 감도
+    /// </summary>
+    [SerializeField]
+    float m_mouseSensitivity = 1.0f;
+    /// <summary>
+    /// 카메라 제한 각도
+    /// </summary>
+    [SerializeField]
+    float m_camMinXRotation = -30.0f;
+    [SerializeField]
+    float m_camMaxXRotation = 50.0f;
+
+    [Header("Transform")]
+    /// <summary>
+    /// 점프 속도
+    /// </summary>
+    [SerializeField]
+    float m_jumpSpeed = 50.0f;
+    /// <summary>
+    /// 최대 점프 높이
+    /// </summary>
+    [SerializeField]
+    float m_MaxJumpHight = 50.0f;
     /// <summary>
     /// 직선 움직임 속도
     /// </summary>
     [SerializeField]
     float m_moveSpeed = 50.0f;
 
+    [Header("Player Infomation")]
     /// <summary>
-    /// 대각선 움직임 속도
+    /// 최대 체력
     /// </summary>
     [SerializeField]
-    float m_diagonalMoveSpeed = 0.5f;
+    int m_maxHp = 0;
 
     /// <summary>
-    /// 마우스 감도
+    /// hp와 late hp 동기화 분기 시간
     /// </summary>
     [SerializeField]
-    float m_xSensitivity = 1.0f;
-    [SerializeField]
-    float m_ySensitivity = 1.0f;
+    float m_hpSyncTime = 0.0f;
 
     /// <summary>
-    /// 카메라
+    /// 다시 데미지를 입을 시간 간격
     /// </summary>
     [SerializeField]
-    public Transform m_cameraBase;
+    float m_canDamageTime = 0.0f;
+
+
+    /// <summary>
+    /// ui매니저
+    /// </summary>
+    private UIManager m_uiManager = null;
 
     /// <summary>
     /// 리지드바디
     /// </summary>
-    Rigidbody m_rb;
+    private Rigidbody m_rigidbody;
 
     /// <summary>
-    /// 키 입력 확인을 위한 불린
+    /// 마우스 회전값 저장
     /// </summary>
-    bool InputKey_W = false;
-    bool InputKey_S = false;
-    bool InputKey_A = false;
-    bool InputKey_D = false;
+    private float m_mouseX = 0f;
+    private float m_mouseY = 0f;
 
     /// <summary>
-    /// 점프 플래그
+    /// 바닥과 접촉 판정일 경우 true
     /// </summary>
-    bool m_jumpFlag = true;
+    private bool m_groundFlag = false;
 
     /// <summary>
-    /// 땅에 닿았을 때
+    /// 점프 가능한 경우 true
     /// </summary>
-    /// <param name="col">콜리더</param>
-    void OnTriggerStay(Collider col)
-    {
-        if (col.gameObject.tag == "Terrain")
-        {
-            m_jumpFlag = true;
-        }
-    }
+    private bool m_canJumpFlag = false;
 
     /// <summary>
-    /// 땅에서 떨어지는 순간
+    /// 움직임 가능한 경우 true
     /// </summary>
-    /// <param name="col">콜리더</param>
-    private void OnTriggerExit(Collider col)
-    {
-        if (col.gameObject.tag == "Terrain")
-        {
-            m_jumpFlag = false;
-        }
-    }
+    private bool m_canMoveFlage = true;
+
+    /// <summary>
+    /// 데미지를 입을 수 있는 상황인 경우 true
+    /// </summary>
+    private bool m_canDamageFlage = true;
+
+    /// <summary>
+    /// hp를 씽크중일 경우 true
+    /// </summary>
+    private bool m_hpSyncFlag = false;
+
+    /// <summary>
+    /// 체력
+    /// </summary>
+    private int m_hp = 0;
+
+    /// <summary>
+    /// 늦게 정해질 체력 값
+    /// </summary>
+    private int m_lateHp = 0;
 
     /// <summary>
     /// start
     /// </summary>
     private void Start()
     {
-        m_rb = GetComponent<Rigidbody>();
-    }
+        m_uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+        m_rigidbody = GetComponent<Rigidbody>();
 
+        m_hp = m_maxHp;
+        m_lateHp = m_maxHp;
+
+        m_uiManager.SetSliders(m_maxHp);
+
+        
+    }
     /// <summary>
     /// update
     /// </summary>
     private void Update()
     {
-        PlayerControll();
+        if (m_canMoveFlage)
+        {
+            MoveControll();
+            JumpControll();
+        }
+
         CameraControll();
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if(other.tag == "Obstacle")
+        {
+            if (m_canDamageFlage)
+            {
+                m_canDamageFlage = false;
+                IsLateHp -= 1;
+                Invoke("CanDamageFlageTrue", m_canDamageTime);
+            }
+        }
+    }
+
+    /// <summary>
+    /// hp를 late hp와 씽크 맞춤
+    /// invoke repeat 사용
+    /// </summary>
+    void HpSync()
+    {
+        if (m_hpSyncFlag)
+        {
+            if(IsHp >= IsLateHp || IsLateHp <= 1)
+            {
+                m_hpSyncFlag = false;
+                CancelInvoke("HpSync");
+            }
+            else
+            {
+                IsHp -= 1;
+            }
+        }
+    }
+    /// <summary>
+    /// 다시 데미지 입는 것이 가능하게 해주는
+    /// 플래그를 true로 바꿈 invoke 사용
+    /// </summary>
+    void CanDamageFlageTrue()
+    {
+        m_canDamageFlage = true;
+    }
+
+    /// <summary>
+    /// 점프
+    /// </summary>
+    void JumpControll()
+    {
+        //점프 입력 중
+        if(Input.GetAxisRaw("Jump") != 0.0f)
+        {
+            if (m_canJumpFlag)
+            {
+                if (transform.position.y >= m_MaxJumpHight)
+                {
+                    CantJump();
+                }
+                m_rigidbody.useGravity = false;
+                transform.position = Vector3.MoveTowards(
+                    transform.position,
+                    new Vector3(transform.position.x, m_MaxJumpHight, transform.position.z),
+                    m_jumpSpeed * Time.deltaTime);
+            }
+            else
+            {
+                if (transform.position.y >= m_MaxJumpHight)
+                {
+                    CantJump();
+                }
+            }
+        }
+        //점프 입력 없음
+        else if(Input.GetAxisRaw("Jump") <= 0.0f)
+        {
+            if (m_canJumpFlag)
+            {
+                if (!m_groundFlag)
+                {
+                    m_rigidbody.useGravity = true;
+                    CantJump();
+                }
+            }
+            else
+            {
+                CantJump();
+            }
+        }
+    }
+    /// <summary>
+    /// 점프 입력 제한
+    /// </summary>
+    void CantJump()
+    {
+        m_rigidbody.useGravity = true;
+        m_canJumpFlag = false;
     }
 
     /// <summary>
     /// 이동을 위한 키 입력 및 전송
-    /// </summary>
-    void PlayerControll()
+    /// </summary>s
+    void MoveControll()
     {
+        Vector3 _vector = new Vector3();
+        _vector.x = Input.GetAxisRaw("Horizontal");
+        _vector.z = Input.GetAxisRaw("Vertical");
 
+        _vector = transform.TransformDirection(_vector);
+        Vector3 velocity = m_rigidbody.velocity;
+        velocity.x = _vector.x * m_moveSpeed;
+        velocity.z = _vector.z * m_moveSpeed;
+
+        m_rigidbody.velocity = velocity;
     }
 
     /// <summary>
@@ -108,10 +264,78 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void CameraControll()
     {
-        float _yRota = Input.GetAxis("Mouse X") * m_xSensitivity;
-        float _xRota = Input.GetAxis("Mouse Y") * m_ySensitivity;
+        m_mouseX += Input.GetAxis("Mouse X") * m_mouseSensitivity;
+        m_mouseY += Input.GetAxis("Mouse Y") * m_mouseSensitivity;
+        m_mouseY = Mathf.Clamp(m_mouseY, m_camMinXRotation, m_camMaxXRotation);
 
-        transform.localRotation *= Quaternion.Euler(0, _yRota, 0);
-        m_cameraBase.localRotation *= Quaternion.Euler(-_xRota, 0, 0);
+        transform.localEulerAngles = new Vector3(0.0f, m_mouseX, 0.0f);
+        m_cameraBaseTransform.localEulerAngles = new Vector3(-m_mouseY, 0.0f, 0.0f);
+
+        m_cameraBaseTransform.transform.position = transform.position;
+    }
+
+    public bool IsCanJumpFlag
+    {
+        get { return m_canJumpFlag; }
+        set { m_canJumpFlag = value; }
+    }
+    public bool IsGroundFlag
+    {
+        get { return m_groundFlag; }
+        set { m_groundFlag = value; }
+    }
+    public bool IsCanMoveFlage
+    {
+        get { return m_canMoveFlage; }
+        set { m_canMoveFlage = value; }
+    }
+    public int IsHp
+    {
+        get 
+        { 
+            return m_hp; 
+        }
+        set 
+        {
+            m_hp = value;
+            if (IsHp <= 0)
+            {
+                //gameover
+                Debug.Log("gameOver");
+            }
+            m_uiManager.HpSlider(m_hp);
+        }
+    }
+    public int IsLateHp
+    {
+        get
+        {
+            return m_lateHp;
+        }
+        set
+        {
+            m_lateHp = value;
+
+            if (!m_hpSyncFlag)
+            {
+                if(m_hp != m_lateHp)
+                {
+                    m_hpSyncFlag = true;
+                    InvokeRepeating("HpSync", m_canDamageTime, m_hpSyncTime);
+                }
+            }
+
+            if (IsHp - 20 >= IsLateHp)
+            {
+                IsHp -= 1;
+            }
+            if (m_lateHp <= 1)
+            {
+                m_lateHp = 1;
+                IsHp -= 1;
+            }
+
+            m_uiManager.LateHpSlider(m_lateHp);
+        }
     }
 }
