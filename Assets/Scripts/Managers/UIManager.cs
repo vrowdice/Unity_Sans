@@ -48,7 +48,7 @@ public class UIManager : MonoBehaviour
     /// hp 슬라이더 정하기
     /// </summary>
     /// <param name="argValue">정할 값</param>
-    public void HpSlider(int argValue)
+    public void HpSlider(float argValue)
     {
         m_hpSlider.value = argValue;
 
@@ -58,7 +58,7 @@ public class UIManager : MonoBehaviour
     /// 나중에 정해지는 hp 슬라이더 정하기
     /// </summary>
     /// <param name="argValue">정할 값</param>
-    public void LateHpSlider(int argValue)
+    public void LateHpSlider(float argValue)
     {
         m_lateHpSlider.value = argValue;
     }

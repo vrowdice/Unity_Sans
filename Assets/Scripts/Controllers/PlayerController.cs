@@ -58,14 +58,13 @@ public class PlayerController : MonoBehaviour
     /// hp와 late hp 동기화 분기 시간
     /// </summary>
     [SerializeField]
-    float m_hpSyncTime = 0.0f;
+    float m_maxHpSyncTime = 0.0f;
 
     /// <summary>
     /// 다시 데미지를 입을 시간 간격
     /// </summary>
     [SerializeField]
     float m_canDamageTime = 0.0f;
-
 
     /// <summary>
     /// ui매니저
@@ -104,19 +103,14 @@ public class PlayerController : MonoBehaviour
     private bool m_canDamageFlage = true;
 
     /// <summary>
-    /// hp를 씽크중일 경우 true
-    /// </summary>
-    private bool m_hpSyncFlag = false;
-
-    /// <summary>
     /// 체력
     /// </summary>
-    private int m_hp = 0;
+    private float m_hp = 0;
 
     /// <summary>
     /// 늦게 정해질 체력 값
     /// </summary>
-    private int m_lateHp = 0;
+    private float m_lateHp = 0;
 
     /// <summary>
     /// start
@@ -131,7 +125,7 @@ public class PlayerController : MonoBehaviour
 
         m_uiManager.SetSliders(m_maxHp);
 
-        
+        StartCoroutine(IESyncHealth());
     }
     /// <summary>
     /// update
@@ -161,24 +155,31 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// hp를 late hp와 씽크 맞춤
-    /// invoke repeat 사용
+    /// 보조 체력을 기본 체력에 동기화하는 코루틴
     /// </summary>
-    void HpSync()
+    /// <returns></returns>
+    IEnumerator IESyncHealth()
     {
-        if (m_hpSyncFlag)
+        while (true)
         {
-            if(IsHp >= IsLateHp || IsLateHp <= 1)
+            float _healthDifference = Mathf.Abs(IsHp - IsLateHp);
+            if (_healthDifference > 0.1f)
             {
-                m_hpSyncFlag = false;
-                CancelInvoke("HpSync");
+                if (IsHp > IsLateHp)
+                {
+                    IsHp -= 1;
+                }
+                else if (IsHp < IsLateHp)
+                {
+                    IsHp += 1;
+                }
             }
-            else
-            {
-                IsHp -= 1;
-            }
+
+            float _syncInterval = _healthDifference > 15.0f ? Mathf.Max(0.1f, 4.0f / _healthDifference) : m_maxHpSyncTime;
+            yield return new WaitForSeconds(_syncInterval);
         }
     }
+
     /// <summary>
     /// 다시 데미지 입는 것이 가능하게 해주는
     /// 플래그를 true로 바꿈 invoke 사용
@@ -289,7 +290,7 @@ public class PlayerController : MonoBehaviour
         get { return m_canMoveFlage; }
         set { m_canMoveFlage = value; }
     }
-    public int IsHp
+    public float IsHp
     {
         get 
         { 
@@ -306,7 +307,7 @@ public class PlayerController : MonoBehaviour
             m_uiManager.HpSlider(m_hp);
         }
     }
-    public int IsLateHp
+    public float IsLateHp
     {
         get
         {
@@ -316,19 +317,6 @@ public class PlayerController : MonoBehaviour
         {
             m_lateHp = value;
 
-            if (!m_hpSyncFlag)
-            {
-                if(m_hp != m_lateHp)
-                {
-                    m_hpSyncFlag = true;
-                    InvokeRepeating("HpSync", m_canDamageTime, m_hpSyncTime);
-                }
-            }
-
-            if (IsHp - 20 >= IsLateHp)
-            {
-                IsHp -= 1;
-            }
             if (m_lateHp <= 1)
             {
                 m_lateHp = 1;

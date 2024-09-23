@@ -15,6 +15,7 @@ public enum AtkType
     VerticalBone,
 
     PopVerticalBone,
+
     GasterBlaster,
 
     Gravity,
@@ -22,6 +23,9 @@ public enum AtkType
     scaffold,
 }
 
+/// <summary>
+/// 공격 데이터
+/// </summary>
 public class AtkData
 {
     //스폰 순서
@@ -56,45 +60,127 @@ public class GameManager : MonoBehaviour
     /// </summary>
     static GameManager g_gameManager;
 
+    [Header("Wall")]
     /// <summary>
     /// (지형)벽 중심
     /// </summary>
     [SerializeField]
     Transform m_wallCenterPos = null;
-
     /// <summary>
     /// (지형)벽 리스트
     /// </summary>
     [SerializeField]
     List<GameObject> m_wallList = new List<GameObject>();
-
-    /// <summary>
-    /// 중력 공격 힘(속도)
-    /// </summary>
-    [SerializeField]
-    float m_gravityAtkPower = 0.0f;
-
     /// <summary>
     /// 벽 변환 속도
     /// </summary>
     [SerializeField]
-    float m_wallDirChangeSpeed = 0.0f;
+    float m_wallDirChangeSpeed = 150.0f;
+    /// <summary>
+    /// 벽 절반 크기
+    /// </summary>
+    [SerializeField]
+    int m_wallHalfSize = 20;
+    /// <summary>
+    /// 벽 메테리얼
+    /// </summary>
+    [SerializeField]
+    Material m_wallMat = null;
+    /// <summary>
+    /// 투명한 벽 메테리얼
+    /// </summary>
+    [SerializeField]
+    Material m_transparentWallMat = null;
+
+    [Header("Atteck")]
+    /// <summary>
+    /// 튀어오르기 공격 경고 오브젝트
+    /// </summary>
+    [SerializeField]
+    GameObject m_popWarningObj = null;
+    /// <summary>
+    /// 공격 오브젝트 프리펩
+    /// </summary>
+    [SerializeField]
+    GameObject m_simpleAtkObj = null;
+    [SerializeField]
+    GameObject m_rangeAtkObj = null;
+    /// <summary>
+    /// 최대 공격 오브젝트 수
+    /// </summary>
+    [SerializeField]
+    int m_simpleAtkObjCount = 300;
+    [SerializeField]
+    int m_rangeAtkObjCount = 30;
+    /// <summary>
+    /// 공격 오브젝트 기본 사이즈
+    /// </summary>
+    [SerializeField]
+    int m_simpleAtkObjBasicSize = 3;
+    [SerializeField]
+    int m_rangeAtkObjBasicSize = 3;
+    /// <summary>
+    /// 튀어오르는 공격 최대 높이
+    /// </summary>
+    [SerializeField]
+    float m_popAtkMaxHeight = 5.0f;
+    /// <summary>
+    /// 튀어오르는 돌발 공격 활성화 시간
+    /// </summary>
+    [SerializeField]
+    float m_popAtkActiveTime = 1.0f;
+    /// <summary>
+    /// 튀어오르는 돌발 공격 속도
+    /// </summary>
+    [SerializeField]
+    float m_popAtkSpeed = 20.0f;
+    /// <summary>
+    /// 튀어오르는 공격 경고하는 시간
+    /// </summary>
+    [SerializeField]
+    float m_popAtkWarnTime = 2.0f;
+    /// <summary>
+    /// 중력 공격 힘(속도)
+    /// </summary>
+    [SerializeField]
+    float m_gravityAtkSpeed = 20.0f;
+
 
     /// <summary>
     /// 플레이어 컨트롤러 스크립트
     /// </summary>
     private PlayerController m_playerController = null;
-
     /// <summary>
     /// 적 공격 데이터 리스트
     /// </summary>
     private List<AtkData> m_atkDataList = new List<AtkData>();
-
+    /// <summary>
+    /// 플레이어 닿으면 단순 공격하는 오브젝트 대기 큐
+    /// </summary>
+    private Queue<SimpleAtk> m_simpleAtkObjWaitQueue = new Queue<SimpleAtk>();
+    /// <summary>
+    /// 원거리 공격 오브젝트 대기 큐
+    /// </summary>
+    private Queue<RangeAtk> m_rangeAtkObjWaitQueue = new Queue<RangeAtk>();
+    /// <summary>
+    /// 전장에서 활성화 된 단순 공격 오브젝트
+    /// 사용하고 쓸모 없어지면 대기 큐로 이동
+    /// </summary>
+    private Queue<SimpleAtk> m_activeSimpleAtkObjQueue = new Queue<SimpleAtk>();
+    /// <summary>
+    /// 전장에서 활성화 된 원거리 공격 오브젝트
+    /// 사용하고 쓸모 없어지면 대기 큐로 이동
+    /// </summary>
+    private Queue<RangeAtk> m_activeRangeAtkObjQueue = new Queue<RangeAtk>();
+    /// <summary>
+    /// 공격하는 오브젝트가 생성될 위치
+    /// </summary>
+    private Vector3 m_atkObjBasicPos = new Vector3(300.0f, 0.0f, 0.0f);
     /// <summary>
     /// 현재 플레이어가 사용하는 벽
+    /// 12시 부터 시계방향으로 0, 1, 2, 3
     /// </summary>
     private int m_nowWall = 0;
-
     /// <summary>
     /// 현재 페이즈
     /// </summary>
@@ -104,18 +190,34 @@ public class GameManager : MonoBehaviour
     /// 현재 페이즈가 지난 시간
     /// </summary>
     private float m_phaseTime = 0.0f;
-
     /// <summary>
     /// 벽 회전 완료 플래그
     /// </summary>
     private bool m_wallRotCompleteFlag = false;
-
     /// <summary>
     /// 상승 완료 플래그
     /// </summary>
     private bool m_ascensionCompleteFlag = false;
 
     private void Awake()
+    {
+        AwakeSetting();
+    }
+    void Start()
+    {
+        StartSetting();
+
+        AllWallPopAtk();
+    }
+    void Update()
+    {
+        
+    }
+
+    /// <summary>
+    /// awake 초기 설정
+    /// </summary>
+    void AwakeSetting()
     {
         if (g_gameManager == null)
         {
@@ -129,14 +231,33 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
+
+        GetCSVData();
     }
-    void Start()
+    /// <summary>
+    /// start 초기 설정
+    /// </summary>
+    void StartSetting()
     {
-        GravityAtk(90.0f);
-    }
-    void Update()
-    {
-        
+        GameObject _simpleAtkParent = new GameObject("SimpleAtkParent");
+        GameObject _rangeAtkParent = new GameObject("RangeAtkParent");
+        GameObject _obj = null;
+
+        for (int i = 0; i < m_simpleAtkObjCount; i++)
+        {
+            _obj = Instantiate(m_simpleAtkObj, _simpleAtkParent.transform);
+            _obj.transform.position = m_atkObjBasicPos;
+            m_simpleAtkObjWaitQueue.Enqueue(_obj.GetComponent<SimpleAtk>());
+
+        }
+        for (int i = 0; i < m_rangeAtkObjCount; i++)
+        {
+            _obj = Instantiate(m_rangeAtkObj, _rangeAtkParent.transform);
+            _obj.transform.position = m_atkObjBasicPos;
+            m_rangeAtkObjWaitQueue.Enqueue(_obj.GetComponent<RangeAtk>());
+        }
+
+        StartCoroutine(IEChangeWall(0.0f));
     }
     
     /// <summary>
@@ -151,7 +272,7 @@ public class GameManager : MonoBehaviour
             AtkData _atkData = new AtkData();
 
             _atkData.m_order = int.Parse(_data[i]["order"].ToString());
-            _atkData.m_type = StrToItemType(_data[i]["type"].ToString());
+            _atkData.m_type = StrToAtkType(_data[i]["type"].ToString());
             _atkData.m_isMove = StrToBool(_data[i]["isMove"].ToString());
             _atkData.m_genTime = float.Parse(_data[i]["genTime"].ToString());
             _atkData.m_sizeY = float.Parse(_data[i]["sizeY"].ToString());
@@ -167,13 +288,12 @@ public class GameManager : MonoBehaviour
             m_atkDataList.Add(_atkData);
         }
     }
-
     /// <summary>
-    /// 아이템 타입 문자열 이넘으로 변경
+    /// 공격 타입 문자열 이넘으로 변경
     /// </summary>
-    /// <param name="argStr">아이템 타입 문자열</param>
-    /// <returns>아이템 타입 이넘</returns>
-    AtkType StrToItemType(string argStr)
+    /// <param name="argStr">공격 타입 문자열</param>
+    /// <returns>공격 타입 이넘</returns>
+    AtkType StrToAtkType(string argStr)
     {
         switch (argStr)
         {
@@ -198,7 +318,6 @@ public class GameManager : MonoBehaviour
                 return new AtkType();
         }
     }
-
     /// <summary>
     /// 데이터의 0, 1 문자열을 bool형식으로 변환
     /// </summary>
@@ -220,50 +339,113 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 현재 지면 전채 뼈 공격
+    /// 현재 지면 전채 돌발 공격
     /// </summary>
     /// <returns></returns>
-    IEnumerator AllWallBoneAtk()
+    void AllWallPopAtk()
     {
-        // 매 프레임 대기
-        yield return null;
+        StartCoroutine(IEPopAtk());
+    }
+    /// <summary>
+    /// 전체 단순 돌발 공격 준비
+    /// </summary>
+    void AllWallPopAtkReady()
+    {
+        for(int i = -m_wallHalfSize; i < m_wallHalfSize; i += m_simpleAtkObjBasicSize)
+        {
+            for(int o = -m_wallHalfSize; o < m_wallHalfSize; o += m_simpleAtkObjBasicSize)
+            {
+                SimpleAtk _simAtk = m_simpleAtkObjWaitQueue.Dequeue();
+                _simAtk.transform.position = new Vector3(o, -10.0f, i);
+                m_activeSimpleAtkObjQueue.Enqueue(_simAtk);
+            }
+        }
+    }
+    /// <summary>
+    /// 전체 단순 돌발 공격 시행
+    /// </summary>
+    void AllWallPopAtkStart()
+    {
+        int _count = m_activeSimpleAtkObjQueue.Count;
+        for (int i = 0; i < _count; i++)
+        {
+            SimpleAtk _simAtk = m_activeSimpleAtkObjQueue.Dequeue();
+            _simAtk.PopAtk(m_popAtkActiveTime, m_popAtkSpeed, m_popAtkMaxHeight);
+            m_simpleAtkObjWaitQueue.Enqueue(_simAtk);
+        }
+    }
+    /// <summary>
+    /// 전체 단순 공격 코루틴
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator IEPopAtk()
+    {
+        AllWallPopAtkReady();
+        m_popWarningObj.SetActive(true);
+        yield return new WaitForSeconds(m_popAtkWarnTime);
+
+        AllWallPopAtkStart();
+        m_popWarningObj.SetActive(false);
+        yield return new WaitForSeconds(m_popAtkActiveTime);
+
+        AllSimpleAtkObjReset();
     }
 
     /// <summary>
     /// 중력 공격
     /// </summary>
-    /// <param name="argDir">공격 방향</param>
-    void GravityAtk(float argDir)
+    /// <param name="argDirZ">공격 방향</param>
+    void GravityAtk(float argDirZ)
     {
-        StartCoroutine(ChangeWallIE(argDir));
-        StartCoroutine(GravityAtkIE());
+        StartCoroutine(IEChangeWall(argDirZ));
+        StartCoroutine(IEGravityAtk());
+    }
+    /// <summary>
+    /// 90도로 나누어지는 각도를 벽 인덱스로 변환
+    /// </summary>
+    /// <param name="argDirZ">방향</param>
+    /// <returns>벽 인덱스</returns>
+    int AngleToWallIndex(float argDirZ)
+    {
+        switch (argDirZ)
+        {
+            case 0.0f:
+                return 2;
+            case 90.0f:
+                return 3;
+            case 180.0f:
+                return 0;
+            case -90.0f:
+                return 1;
+            default:
+                Debug.Log("Not allowed value");
+                return 2;
+        }
     }
     /// <summary>
     /// 벽 변경 코루틴
     /// </summary>
     /// <param name="argDirZ">euler 방향</param>
     /// <returns>none</returns>
-    IEnumerator ChangeWallIE(float argDirZ)
+    IEnumerator IEChangeWall(float argDirZ)
     {
         m_wallRotCompleteFlag = false;
 
-        // 목표 회전값을 Quaternion으로 변환
-        Quaternion targetRotation = Quaternion.Euler(new Vector3(0.0f, 0.0f, argDirZ));
+        for (int i = 0; i < m_wallList.Count; i++)
+        {
+            m_wallList[i].gameObject.GetComponent<MeshRenderer>().material = m_transparentWallMat;
+        }
+        m_wallList[AngleToWallIndex(argDirZ)].gameObject.GetComponent<MeshRenderer>().material = m_wallMat;
 
-        // 목표 각도에 도달할 때까지 반복
+        Quaternion targetRotation = Quaternion.Euler(new Vector3(0.0f, 0.0f, argDirZ));
         while (Quaternion.Angle(m_wallCenterPos.rotation, targetRotation) > 0.1f)
         {
-            // 일정한 속도로 회전
             m_wallCenterPos.rotation = Quaternion.RotateTowards(
                 m_wallCenterPos.rotation,
                 targetRotation,
                 m_wallDirChangeSpeed * Time.deltaTime);
-
-            // 한 프레임 대기 후 다시 회전
             yield return null;
         }
-
-        // 정확한 목표 각도로 설정
         transform.rotation = targetRotation;
     }
     /// <summary>
@@ -271,7 +453,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="argDir">중력 공격 방향</param>
     /// <returns>none</returns>
-    IEnumerator GravityAtkIE()
+    IEnumerator IEGravityAtk()
     {
         m_ascensionCompleteFlag = true;
         m_playerController.GetComponent<Rigidbody>().useGravity = false;
@@ -282,16 +464,14 @@ public class GameManager : MonoBehaviour
             if (m_ascensionCompleteFlag && m_playerController.transform.position.y <
                 m_wallCenterPos.position.y)
             {
-                // 위로 상승
                 m_playerController.IsCanMoveFlage = false;
                 m_playerController.transform.position = Vector3.MoveTowards(
                     m_playerController.transform.position,
                     m_wallCenterPos.position,
-                    m_gravityAtkPower * Time.deltaTime);
+                    m_gravityAtkSpeed * Time.deltaTime);
             }
             else
             {
-                // 상승 완료 플래그를 설정
                 m_ascensionCompleteFlag = false;
 
                 // 하강 상태일 때
@@ -300,9 +480,7 @@ public class GameManager : MonoBehaviour
                     new Vector3(m_playerController.transform.position.x,
                     0f,
                     m_playerController.transform.position.z),
-                    m_gravityAtkPower * 4 * Time.deltaTime);
-
-                // 지면에 도달하면 공격 종료
+                    m_gravityAtkSpeed * 4 * Time.deltaTime);
                 if (m_playerController.transform.position.y <= 0.0f)
                 {
                     m_playerController.IsCanMoveFlage = true;
@@ -310,11 +488,39 @@ public class GameManager : MonoBehaviour
                     yield break;
                 }
             }
-
-            // 매 프레임 대기
             yield return null;
         }
     }
+
+    /// <summary>
+    /// 전체 단순 공격 오브젝트 리셋
+    /// </summary>
+    public void AllSimpleAtkObjReset()
+    {
+        foreach (SimpleAtk item in m_activeSimpleAtkObjQueue)
+        {
+            m_simpleAtkObjWaitQueue.Enqueue(item);
+        }
+        foreach (SimpleAtk item in m_simpleAtkObjWaitQueue)
+        {
+            item.gameObject.transform.position = m_atkObjBasicPos;
+        }
+    }
+    /// <summary>
+    /// 전체 원거리 공격 오브젝트 리셋
+    /// </summary>
+    public void AllRangeAtkObjReset()
+    {
+        foreach (RangeAtk item in m_activeRangeAtkObjQueue)
+        {
+            m_rangeAtkObjWaitQueue.Enqueue(item);
+        }
+        foreach (RangeAtk item in m_rangeAtkObjWaitQueue)
+        {
+            item.gameObject.transform.position = m_atkObjBasicPos;
+        }
+    }
+
 
     /// <summary>
     /// 자기 자신 인스턴스
