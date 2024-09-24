@@ -4,7 +4,27 @@ using UnityEngine;
 
 public class SimpleAtk : MonoBehaviour
 {
+    /// <summary>
+    /// 움직이고 있을 경우
+    /// </summary>
+    public bool m_isMove = false;
+    /// <summary>
+    /// 움직이는 플래이어 공격 전환
+    /// </summary>
+    public bool m_isMovePlayerAtk = false;
+    /// <summary>
+    /// 속도
+    /// </summary>
+    public float m_speed = 0.0f;
 
+    /// <summary>
+    /// 공격 방법 전환
+    /// </summary>
+    /// <param name="argMovePlayerAtkBoolen">true 움직이는 플래이어 공격으로</param>
+    public void ChangeAtk(bool argMovePlayerAtkBoolen)
+    {
+        m_isMovePlayerAtk = true;
+    }
 
     /// <summary>
     /// 튀어오르는 공격 자체 처리
@@ -16,7 +36,6 @@ public class SimpleAtk : MonoBehaviour
     {
         StartCoroutine(IEPopAtk(argWaitTime, argSpeed, argMaxHeight));
     }
-
     /// <summary>
     /// 튀어오르는 공격 IE 자체 처리
     /// </summary>
@@ -56,5 +75,15 @@ public class SimpleAtk : MonoBehaviour
 
             yield return null;
         }
+    }
+
+    /// <summary>
+    /// 상태 초기화
+    /// </summary>
+    public void ResetObj()
+    {
+        m_isMove = false;
+        m_isMovePlayerAtk = false;
+        m_speed = 0.0f;
     }
 }

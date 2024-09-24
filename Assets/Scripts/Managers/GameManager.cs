@@ -109,7 +109,7 @@ public class GameManager : MonoBehaviour
     /// 최대 공격 오브젝트 수
     /// </summary>
     [SerializeField]
-    int m_simpleAtkObjCount = 300;
+    int m_simpleAtkObjCount = 200;
     [SerializeField]
     int m_rangeAtkObjCount = 30;
     /// <summary>
@@ -119,26 +119,30 @@ public class GameManager : MonoBehaviour
     int m_simpleAtkObjBasicSize = 3;
     [SerializeField]
     int m_rangeAtkObjBasicSize = 3;
+
+    [Header("Pop Atteck")]
     /// <summary>
     /// 튀어오르는 공격 최대 높이
     /// </summary>
     [SerializeField]
-    float m_popAtkMaxHeight = 5.0f;
+    float m_popAtkMaxHeight = 0.0f;
     /// <summary>
     /// 튀어오르는 돌발 공격 활성화 시간
     /// </summary>
     [SerializeField]
-    float m_popAtkActiveTime = 1.0f;
+    float m_popAtkActiveTime = 1.5f;
     /// <summary>
     /// 튀어오르는 돌발 공격 속도
     /// </summary>
     [SerializeField]
-    float m_popAtkSpeed = 20.0f;
+    float m_popAtkSpeed = 100.0f;
     /// <summary>
     /// 튀어오르는 공격 경고하는 시간
     /// </summary>
     [SerializeField]
-    float m_popAtkWarnTime = 2.0f;
+    float m_popAtkWarnTime = 1.5f;
+
+    [Header("Gravity Atteck")]
     /// <summary>
     /// 중력 공격 힘(속도)
     /// </summary>
@@ -150,6 +154,10 @@ public class GameManager : MonoBehaviour
     /// 플레이어 컨트롤러 스크립트
     /// </summary>
     private PlayerController m_playerController = null;
+    /// <summary>
+    /// 대기 리스트로 돌아가기 위한 임시 저장 리스트
+    /// </summary>
+    private List<SimpleAtk> m_toWaitTmpList = new List<SimpleAtk>();
     /// <summary>
     /// 적 공격 데이터 리스트
     /// </summary>
@@ -166,12 +174,12 @@ public class GameManager : MonoBehaviour
     /// 전장에서 활성화 된 단순 공격 오브젝트
     /// 사용하고 쓸모 없어지면 대기 큐로 이동
     /// </summary>
-    private Queue<SimpleAtk> m_activeSimpleAtkObjQueue = new Queue<SimpleAtk>();
+    private LinkedList<SimpleAtk> m_activeSimpleAtkObjList = new LinkedList<SimpleAtk>();
     /// <summary>
     /// 전장에서 활성화 된 원거리 공격 오브젝트
     /// 사용하고 쓸모 없어지면 대기 큐로 이동
     /// </summary>
-    private Queue<RangeAtk> m_activeRangeAtkObjQueue = new Queue<RangeAtk>();
+    private LinkedList<RangeAtk> m_activeRangeAtkObjQueue = new LinkedList<RangeAtk>();
     /// <summary>
     /// 공격하는 오브젝트가 생성될 위치
     /// </summary>
@@ -207,11 +215,13 @@ public class GameManager : MonoBehaviour
     {
         StartSetting();
 
-        AllWallPopAtk();
+        SimpleAtk(new Vector3(20.0f, 0.0f, -10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 8.0f);
+        SimpleAtk(new Vector3(20.0f, 0.0f, 0.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 5.0f);
+        SimpleAtk(new Vector3(20.0f, 0.0f, 10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 3.0f);
     }
     void Update()
     {
-        
+        SimpleAtkMove();
     }
 
     /// <summary>
@@ -339,6 +349,59 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 단순 공격 생성
+    /// </summary>
+    /// <param name="argPosition">생성 위치</param>
+    /// <param name="argRotation">생성 방향</param>
+    /// <param name="argSize">생성 크기</param>
+    /// <param name="argSpeed">생성 시 속도</param>
+    void SimpleAtk(Vector3 argPosition, Vector3 argRotation, Vector3 argSize, float argSpeed)
+    {
+        SimpleAtk _atk = ActiveSimpleAtk();
+        _atk.transform.position = argPosition;
+        _atk.transform.rotation = Quaternion.Euler(argRotation);
+        _atk.transform.localScale = argSize;
+        _atk.m_speed = argSpeed;
+        _atk.m_isMove = true;
+
+        Debug.Log(_atk);
+    }
+    /// <summary>
+    /// 단순 공격 오브젝트 이동
+    /// </summary>
+    void SimpleAtkMove()
+    {
+        foreach(SimpleAtk item in m_activeSimpleAtkObjList)
+        {
+            if (item.m_isMove)
+            {
+                item.transform.Translate(Vector3.forward * item.m_speed * Time.deltaTime);
+
+                if (item.transform.position.x <= -m_wallHalfSize * 2 ||
+                    item.transform.position.x >= m_wallHalfSize * 2 ||
+                    item.transform.position.y <= -m_wallHalfSize ||
+                    item.transform.position.y >= m_wallHalfSize * 3 ||
+                    item.transform.position.z <= -m_wallHalfSize * 2 ||
+                    item.transform.position.z >= m_wallHalfSize * 2)
+                {
+                    item.transform.position = m_atkObjBasicPos;
+                    item.ResetObj();
+
+                    m_toWaitTmpList.Add(item);
+                }
+            }
+
+        }
+
+        foreach(SimpleAtk item in m_toWaitTmpList)
+        {
+            WaitSimpleAtk(item);
+        }
+
+        m_toWaitTmpList.Clear();
+    }
+
+    /// <summary>
     /// 현재 지면 전채 돌발 공격
     /// </summary>
     /// <returns></returns>
@@ -357,7 +420,7 @@ public class GameManager : MonoBehaviour
             {
                 SimpleAtk _simAtk = m_simpleAtkObjWaitQueue.Dequeue();
                 _simAtk.transform.position = new Vector3(o, -10.0f, i);
-                m_activeSimpleAtkObjQueue.Enqueue(_simAtk);
+                m_activeSimpleAtkObjList.AddLast(_simAtk);
             }
         }
     }
@@ -366,10 +429,11 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void AllWallPopAtkStart()
     {
-        int _count = m_activeSimpleAtkObjQueue.Count;
+        int _count = m_activeSimpleAtkObjList.Count;
         for (int i = 0; i < _count; i++)
         {
-            SimpleAtk _simAtk = m_activeSimpleAtkObjQueue.Dequeue();
+            SimpleAtk _simAtk = m_activeSimpleAtkObjList.First.Value;
+            m_activeSimpleAtkObjList.RemoveFirst();
             _simAtk.PopAtk(m_popAtkActiveTime, m_popAtkSpeed, m_popAtkMaxHeight);
             m_simpleAtkObjWaitQueue.Enqueue(_simAtk);
         }
@@ -386,9 +450,6 @@ public class GameManager : MonoBehaviour
 
         AllWallPopAtkStart();
         m_popWarningObj.SetActive(false);
-        yield return new WaitForSeconds(m_popAtkActiveTime);
-
-        AllSimpleAtkObjReset();
     }
 
     /// <summary>
@@ -493,11 +554,54 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 단순 공격 활성화 큐로 이동
+    /// </summary>
+    /// <param name="argAtk">대상</param>
+    /// <returns>대상</returns>
+    SimpleAtk ActiveSimpleAtk()
+    {
+        m_activeSimpleAtkObjList.AddLast(m_simpleAtkObjWaitQueue.Dequeue());
+        return m_activeSimpleAtkObjList.Last.Value;
+    }
+    /// <summary>
+    /// 원거리 공격 활성화 큐로 이동
+    /// </summary>
+    /// <param name="argAtk">대상</param>
+    /// <returns>대상</returns>
+    RangeAtk ActiveRangeAtk()
+    {
+        m_activeRangeAtkObjQueue.AddLast(m_rangeAtkObjWaitQueue.Dequeue());
+        return m_activeRangeAtkObjQueue.Last.Value;
+    }
+    /// <summary>
+    /// 단순 공격 대기 큐로 변경
+    /// </summary>
+    /// <param name="argAtk"></param>
+    SimpleAtk WaitSimpleAtk(SimpleAtk argAtk)
+    {
+        m_activeSimpleAtkObjList.Remove(argAtk);
+        m_simpleAtkObjWaitQueue.Enqueue(argAtk);
+
+        return argAtk;
+    }
+    /// <summary>
+    /// 단순 공격 대기 큐로 변경
+    /// </summary>
+    /// <param name="argAtk"></param>
+    RangeAtk WaitRangeAtk(RangeAtk argAtk)
+    {
+        m_activeRangeAtkObjQueue.Remove(argAtk);
+        m_rangeAtkObjWaitQueue.Enqueue(argAtk);
+
+        return argAtk;
+    }
+
+    /// <summary>
     /// 전체 단순 공격 오브젝트 리셋
     /// </summary>
     public void AllSimpleAtkObjReset()
     {
-        foreach (SimpleAtk item in m_activeSimpleAtkObjQueue)
+        foreach (SimpleAtk item in m_activeSimpleAtkObjList)
         {
             m_simpleAtkObjWaitQueue.Enqueue(item);
         }
