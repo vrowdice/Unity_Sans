@@ -202,87 +202,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 159531702}
   m_CullTransparentMesh: 1
---- !u!1 &173652184
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 173652187}
-  - component: {fileID: 173652186}
-  - component: {fileID: 173652185}
-  m_Layer: 0
-  m_Name: PopWarningObj
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!23 &173652185
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 173652184}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 57eb22d144bf15d4d9feb3717c00b5e7, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &173652186
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 173652184}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &173652187
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 173652184}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.5, z: 0}
-  m_LocalScale: {x: 40, y: 5, z: 40}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 7
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &253360092
 GameObject:
   m_ObjectHideFlags: 0
@@ -433,13 +352,17 @@ MonoBehaviour:
   m_wallHalfSize: 20
   m_wallMat: {fileID: 2100000, guid: 9cba7c41e77ec2146aa85ad84f25cef8, type: 2}
   m_transparentWallMat: {fileID: 2100000, guid: d167a759bbb23da4aa7d713d964a2c99, type: 2}
-  m_popWarningObj: {fileID: 173652184}
+  m_popWarningObj: {fileID: 3267999291431000279, guid: cfdf9739b1cea2a46a6fa47007cbc85a, type: 3}
+  m_standardMat: {fileID: 2100000, guid: 10219921a22385346a05c4c9f5a9a45a, type: 2}
+  m_warningMat: {fileID: 2100000, guid: 57eb22d144bf15d4d9feb3717c00b5e7, type: 2}
   m_simpleAtkObj: {fileID: 1280706710163144674, guid: b2e2766254d33184283ffe7d8c6e89c2, type: 3}
-  m_rangeAtkObj: {fileID: 2680253368517206058, guid: 3c8900df6f38bdd4aa15baaa3c6693ef, type: 3}
-  m_simpleAtkObjCount: 200
-  m_rangeAtkObjCount: 30
+  m_simpleAtkObjCount: 250
   m_simpleAtkObjBasicSize: 3
+  m_rangeAtkObj: {fileID: 2680253368517206058, guid: 3c8900df6f38bdd4aa15baaa3c6693ef, type: 3}
+  m_rangeAtkObjCount: 30
   m_rangeAtkObjBasicSize: 3
+  m_rangeAtkWarnTime: 2
+  m_rangeAtkTime: 2
   m_popAtkMaxHeight: 0
   m_popAtkActiveTime: 1.5
   m_popAtkSpeed: 100
@@ -2118,7 +2041,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1280706710163144670, guid: b2e2766254d33184283ffe7d8c6e89c2, type: 3}
       propertyPath: m_RootOrder
-      value: 8
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1280706710163144670, guid: b2e2766254d33184283ffe7d8c6e89c2, type: 3}
       propertyPath: m_LocalScale.x

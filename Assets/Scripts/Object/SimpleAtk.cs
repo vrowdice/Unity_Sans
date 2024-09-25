@@ -70,6 +70,7 @@ public class SimpleAtk : MonoBehaviour
                 argSpeed * Time.deltaTime);
             if (Mathf.Abs(-10.0f - transform.position.y) < 0.01f)
             {
+                GameManager.Instance.WaitSimpleAtk(this);
                 break;
             }
 

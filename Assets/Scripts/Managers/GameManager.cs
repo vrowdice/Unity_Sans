@@ -99,26 +99,51 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     GameObject m_popWarningObj = null;
     /// <summary>
+    /// 기본 메테리얼
+    /// </summary>
+    [SerializeField]
+    Material m_standardMat = null;
+    /// <summary>
+    /// 경고 메테리얼
+    /// </summary>
+    [SerializeField]
+    Material m_warningMat = null;
+
+    [Header("Simple Atteck")]
+    /// <summary>
     /// 공격 오브젝트 프리펩
     /// </summary>
     [SerializeField]
     GameObject m_simpleAtkObj = null;
-    [SerializeField]
-    GameObject m_rangeAtkObj = null;
     /// <summary>
     /// 최대 공격 오브젝트 수
     /// </summary>
     [SerializeField]
     int m_simpleAtkObjCount = 200;
-    [SerializeField]
-    int m_rangeAtkObjCount = 30;
     /// <summary>
     /// 공격 오브젝트 기본 사이즈
     /// </summary>
     [SerializeField]
     int m_simpleAtkObjBasicSize = 3;
+
+
+    [Header("Range Atteck")]
+    [SerializeField]
+    GameObject m_rangeAtkObj = null;
+    [SerializeField]
+    int m_rangeAtkObjCount = 30;
     [SerializeField]
     int m_rangeAtkObjBasicSize = 3;
+    /// <summary>
+    /// 원거리 공격 경고 시간
+    /// </summary>
+    [SerializeField]
+    float m_rangeAtkWarnTime = 2.0f;
+    /// <summary>
+    /// 원거리 공격 공격 시간
+    /// </summary>
+    [SerializeField]
+    float m_rangeAtkTime = 2.0f;
 
     [Header("Pop Atteck")]
     /// <summary>
@@ -215,9 +240,14 @@ public class GameManager : MonoBehaviour
     {
         StartSetting();
 
+        AllWallPopAtk();
+
         SimpleAtk(new Vector3(20.0f, 0.0f, -10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 8.0f);
         SimpleAtk(new Vector3(20.0f, 0.0f, 0.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 5.0f);
         SimpleAtk(new Vector3(20.0f, 0.0f, 10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 3.0f);
+
+        RangeAtk(new Vector3(-15.0f, 2.0f, -30.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(5.0f, 5.0f, 5.0f));
+        RangeAtk(new Vector3(-5.0f, 2.0f, -30.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(5.0f, 5.0f, 5.0f));
     }
     void Update()
     {
@@ -268,6 +298,10 @@ public class GameManager : MonoBehaviour
         }
 
         StartCoroutine(IEChangeWall(0.0f));
+
+        _obj = Instantiate(m_popWarningObj);
+        m_popWarningObj = _obj;
+        m_popWarningObj.SetActive(false);
     }
     
     /// <summary>
@@ -358,13 +392,12 @@ public class GameManager : MonoBehaviour
     void SimpleAtk(Vector3 argPosition, Vector3 argRotation, Vector3 argSize, float argSpeed)
     {
         SimpleAtk _atk = ActiveSimpleAtk();
-        _atk.transform.position = argPosition;
-        _atk.transform.rotation = Quaternion.Euler(argRotation);
-        _atk.transform.localScale = argSize;
         _atk.m_speed = argSpeed;
         _atk.m_isMove = true;
 
-        Debug.Log(_atk);
+        _atk.transform.position = argPosition;
+        _atk.transform.rotation = Quaternion.Euler(argRotation);
+        _atk.transform.localScale = argSize;
     }
     /// <summary>
     /// 단순 공격 오브젝트 이동
@@ -402,6 +435,24 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 원거리 공격
+    /// </summary>
+    /// <param name="argPosition">생성 위치</param>
+    /// <param name="argRotation">생성 방향</param>
+    /// <param name="argSize">생성 크기(공격 하는 오브젝트도 크기에 비례)</param>
+    /// <param name="argWarnTime">공격 경고 시간</param>
+    /// <param name="argAtkTime">공격 시간</param>
+    void RangeAtk(Vector3 argPosition, Vector3 argRotation, Vector3 argSize)
+    {
+        RangeAtk _atk = ActiveRangeAtk();
+        _atk.StartRangeAtk(m_rangeAtkWarnTime, m_rangeAtkTime);
+
+        _atk.transform.position = argPosition;
+        _atk.transform.rotation = Quaternion.Euler(argRotation);
+        _atk.transform.localScale = argSize;
+    }
+
+    /// <summary>
     /// 현재 지면 전채 돌발 공격
     /// </summary>
     /// <returns></returns>
@@ -419,6 +470,8 @@ public class GameManager : MonoBehaviour
             for(int o = -m_wallHalfSize; o < m_wallHalfSize; o += m_simpleAtkObjBasicSize)
             {
                 SimpleAtk _simAtk = m_simpleAtkObjWaitQueue.Dequeue();
+                _simAtk.m_isMove = false;
+
                 _simAtk.transform.position = new Vector3(o, -10.0f, i);
                 m_activeSimpleAtkObjList.AddLast(_simAtk);
             }
@@ -429,13 +482,12 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void AllWallPopAtkStart()
     {
-        int _count = m_activeSimpleAtkObjList.Count;
-        for (int i = 0; i < _count; i++)
+        foreach(SimpleAtk item in m_activeSimpleAtkObjList)
         {
-            SimpleAtk _simAtk = m_activeSimpleAtkObjList.First.Value;
-            m_activeSimpleAtkObjList.RemoveFirst();
-            _simAtk.PopAtk(m_popAtkActiveTime, m_popAtkSpeed, m_popAtkMaxHeight);
-            m_simpleAtkObjWaitQueue.Enqueue(_simAtk);
+            if (!item.m_isMove)
+            {
+                item.PopAtk(m_popAtkActiveTime, m_popAtkSpeed, m_popAtkMaxHeight);
+            }
         }
     }
     /// <summary>
@@ -573,14 +625,16 @@ public class GameManager : MonoBehaviour
         m_activeRangeAtkObjQueue.AddLast(m_rangeAtkObjWaitQueue.Dequeue());
         return m_activeRangeAtkObjQueue.Last.Value;
     }
+
     /// <summary>
     /// 단순 공격 대기 큐로 변경
     /// </summary>
     /// <param name="argAtk"></param>
-    SimpleAtk WaitSimpleAtk(SimpleAtk argAtk)
+    public SimpleAtk WaitSimpleAtk(SimpleAtk argAtk)
     {
         m_activeSimpleAtkObjList.Remove(argAtk);
         m_simpleAtkObjWaitQueue.Enqueue(argAtk);
+        argAtk.transform.position = m_atkObjBasicPos;
 
         return argAtk;
     }
@@ -588,10 +642,11 @@ public class GameManager : MonoBehaviour
     /// 단순 공격 대기 큐로 변경
     /// </summary>
     /// <param name="argAtk"></param>
-    RangeAtk WaitRangeAtk(RangeAtk argAtk)
+    public RangeAtk WaitRangeAtk(RangeAtk argAtk)
     {
         m_activeRangeAtkObjQueue.Remove(argAtk);
         m_rangeAtkObjWaitQueue.Enqueue(argAtk);
+        argAtk.transform.position = m_atkObjBasicPos;
 
         return argAtk;
     }
@@ -635,5 +690,13 @@ public class GameManager : MonoBehaviour
         {
             return g_gameManager;
         }
+    }
+    public Material IsWarnMat
+    {
+        get { return m_warningMat; }
+    }
+    public Material IsStandardMat
+    {
+        get { return m_standardMat; }
     }
 }
