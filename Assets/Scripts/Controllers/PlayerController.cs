@@ -143,14 +143,29 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if(other.tag == "Obstacle")
+        if(other.tag == "Attack")
         {
-            if (m_canDamageFlage)
+            GetDamage(-1);
+        }
+        else if(other.tag == "MovePlayerAttack")
+        {
+            if(m_rigidbody.velocity.magnitude >= 0.1f)
             {
-                m_canDamageFlage = false;
-                IsLateHp -= 1;
-                Invoke("CanDamageFlageTrue", m_canDamageTime);
+                GetDamage(-1);
             }
+        }
+    }
+    /// <summary>
+    /// 데미지 부과
+    /// </summary>
+    /// <param name="argManageHp"></param>
+    void GetDamage(float argManageHp)
+    {
+        if (m_canDamageFlage)
+        {
+            m_canDamageFlage = false;
+            IsLateHp += argManageHp;
+            Invoke("CanDamageFlageTrue", m_canDamageTime);
         }
     }
 

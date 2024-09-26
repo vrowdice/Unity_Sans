@@ -20,10 +20,21 @@ public class SimpleAtk : MonoBehaviour
     /// <summary>
     /// 공격 방법 전환
     /// </summary>
-    /// <param name="argMovePlayerAtkBoolen">true 움직이는 플래이어 공격으로</param>
-    public void ChangeAtk(bool argMovePlayerAtkBoolen)
+    /// <param name="argIsMovePlayerAtk">true 움직이는 플래이어 공격으로</param>
+    public void ChangeMovePlayerAtk(bool argIsMovePlayerAtk)
     {
-        m_isMovePlayerAtk = true;
+        if (argIsMovePlayerAtk)
+        {
+            GetComponent<MeshRenderer>().material = GameManager.Instance.IsMovePlayerAtkObjMat;
+            m_isMovePlayerAtk = true;
+            gameObject.tag = "MovePlayerAttack";
+        }
+        else
+        {
+            GetComponent<MeshRenderer>().material = GameManager.Instance.IsAtkObjMat;
+            m_isMovePlayerAtk = false;
+            gameObject.tag = "Attack";
+        }
     }
 
     /// <summary>
@@ -83,8 +94,8 @@ public class SimpleAtk : MonoBehaviour
     /// </summary>
     public void ResetObj()
     {
+        ChangeMovePlayerAtk(false);
         m_isMove = false;
-        m_isMovePlayerAtk = false;
         m_speed = 0.0f;
     }
 }

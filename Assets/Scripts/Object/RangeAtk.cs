@@ -57,8 +57,8 @@ public class RangeAtk : MonoBehaviour
     /// </summary>
     void StartAtk()
     {
-        m_atkObj.GetComponent<MeshRenderer>().material = GameManager.Instance.IsStandardMat;
-        m_atkObj.tag = "Obstacle";
+        m_atkObj.GetComponent<MeshRenderer>().material = GameManager.Instance.IsAtkObjMat;
+        m_atkObj.tag = "Attack";
     }
 
     /// <summary>
