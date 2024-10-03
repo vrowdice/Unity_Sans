@@ -26,18 +26,16 @@ using UnityEngine;
 
 /// <summary>
 /// 적 공격 타입 이넘
+/// 데이터 상에서는 각 인덱스를 부여받음
 /// </summary>
 public enum AtkType
 {
-    BlueSimpleAtk,
-    SimpleAtk,
-    PopAtk,
-
-    RangeAtk,
-
-    GravityAtk,
-
-    Scaffold,
+    SimpleAtk, //1 index
+    BlueSimpleAtk, //2 index
+    PopAtk, //3 index
+    RangeAtk, //4 index
+    GravityAtk, //5 index
+    Scaffold, //6 index
 }
 
 /// <summary>
@@ -54,10 +52,12 @@ public class AtkData
     //0 = false
     //1 = true
     public bool m_isMove = false;
+    //움직이는 속도
+    public float m_speed = 0.0f;
     //스폰 시간
     public float m_genTime = 0.0f;
     //공격 오브젝트 사이즈
-    public float m_sizeY = 0.0f;
+    public float m_size = 0.0f;
     //스폰 위치, 스폰 방향
     //움직이는 오브젝트는 정면으로 이동함
     //공격 방향도 로테이션에 따라 달라짐
@@ -71,6 +71,12 @@ public class GameManager : MonoBehaviour
     /// game manager
     /// </summary>
     static GameManager g_gameManager;
+
+    [Header("Common")]
+    /// <summary>
+    /// 페이즈가 끝나고 기다리는 시간
+    /// </summary>
+    float m_phaseOverWaitTime = 4.0f;
 
     [Header("Wall")]
     /// <summary>
@@ -125,6 +131,23 @@ public class GameManager : MonoBehaviour
     /// </summary>
     [SerializeField]
     Material m_warningMat = null;
+
+    [Header("Scaffold")]
+    /// <summary>
+    /// 발판 오브젝트 프리펩
+    /// </summary>
+    [SerializeField]
+    GameObject m_scaffoldObj = null;
+    /// <summary>
+    /// 최대 생성 오브젝트 수
+    /// </summary>
+    [SerializeField]
+    int m_scaffoldObjCount = 50;
+    /// <summary>
+    /// 기본 사이즈
+    /// </summary>
+    [SerializeField]
+    int m_scaffoldBasicSize = 3;
 
     [Header("Simple Atteck")]
     /// <summary>
@@ -203,7 +226,12 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 대기 리스트로 돌아가기 위한 임시 저장 리스트
     /// </summary>
-    private List<SimpleAtk> m_toWaitTmpList = new List<SimpleAtk>();
+    private List<SimpleAtk> m_toWaitSimpleAtkTmpList = new List<SimpleAtk>();
+    /// <summary>
+    /// 대기 리스트로 돌아가기 위한 임시 저장 리스트
+    /// </summary>
+    private List<Scaffold> m_toWaitScaffoldTmpList = new List<Scaffold>();
+
     /// <summary>
     /// 플레이어 닿으면 단순 공격하는 오브젝트 대기 큐
     /// </summary>
@@ -213,6 +241,11 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private Queue<RangeAtk> m_rangeAtkObjWaitQueue = new Queue<RangeAtk>();
     /// <summary>
+    /// 원거리 공격 오브젝트 대기 큐
+    /// </summary>
+    private Queue<Scaffold> m_scaffoldObjWaitQueue = new Queue<Scaffold>();
+
+    /// <summary>
     /// 전장에서 활성화 된 단순 공격 오브젝트
     /// 사용하고 쓸모 없어지면 대기 큐로 이동
     /// </summary>
@@ -221,12 +254,17 @@ public class GameManager : MonoBehaviour
     /// 전장에서 활성화 된 원거리 공격 오브젝트
     /// 사용하고 쓸모 없어지면 대기 큐로 이동
     /// </summary>
-    private LinkedList<RangeAtk> m_activeRangeAtkObjQueue = new LinkedList<RangeAtk>();
+    private LinkedList<RangeAtk> m_activeRangeAtkObjList = new LinkedList<RangeAtk>();
+    /// <summary>
+    /// 전장에서 활성화 된 발판 오브젝트
+    /// 사용하고 쓸모 없어지면 대기 큐로 이동
+    /// </summary>
+    private LinkedList<Scaffold> m_activeScaffoldObjList = new LinkedList<Scaffold>();
 
     /// <summary>
     /// 공격하는 오브젝트가 생성될 위치
     /// </summary>
-    private Vector3 m_atkObjBasicPos = new Vector3(300.0f, 0.0f, 0.0f);
+    private Vector3 m_objBasicPos = new Vector3(300.0f, 0.0f, 0.0f);
     /// <summary>
     /// 현재 플레이어가 사용하는 벽
     /// 12시 부터 시계방향으로 0, 1, 2, 3
@@ -269,29 +307,20 @@ public class GameManager : MonoBehaviour
     {
         StartSetting();
 
-        AllWallPopAtk();
+        PhaseStart();
 
-        SimpleAtk(new Vector3(20.0f, 0.0f, -10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 8.0f, false);
-        SimpleAtk(new Vector3(20.0f, 0.0f, 0.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 5.0f, true);
-        SimpleAtk(new Vector3(20.0f, 0.0f, 10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 3.0f, false);
-
-        RangeAtk(new Vector3(-15.0f, 2.0f, -30.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(5.0f, 5.0f, 5.0f));
-        RangeAtk(new Vector3(-5.0f, 2.0f, -30.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(5.0f, 5.0f, 5.0f));
+        //AllWallPopAtk();
+        //SimpleAtk(new Vector3(20.0f, 0.0f, -10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 8.0f, false);
+        //SimpleAtk(new Vector3(20.0f, 0.0f, 0.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 5.0f, true);
+        //SimpleAtk(new Vector3(20.0f, 0.0f, 10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 3.0f, false);
+        //RangeAtk(new Vector3(-15.0f, 2.0f, -30.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(5.0f, 5.0f, 5.0f));
+        //RangeAtk(new Vector3(-5.0f, 2.0f, -30.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(5.0f, 5.0f, 5.0f));
+        //Scaffold(new Vector3(20.0f, 0.0f, 0.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(10.0f, 1.0f, 10.0f), 5.0f, true);
     }
     void Update()
     {
-        SimpleAtkMove();
+        MoveObj();
         TimingCheck();
-
-        if (Input.GetMouseButtonDown(0) && !m_isTiming)
-        {
-            StartTimer();
-        }
-        else if (Input.GetMouseButtonDown(0) && m_isTiming)
-        {
-            Debug.Log("경과 시간: " + m_phaseTime + "초");
-            StopTimer();
-        }
     }
 
     /// <summary>
@@ -321,20 +350,27 @@ public class GameManager : MonoBehaviour
     {
         GameObject _simpleAtkParent = new GameObject("SimpleAtkParent");
         GameObject _rangeAtkParent = new GameObject("RangeAtkParent");
-        GameObject _obj = null;
+        GameObject _scaffoldParent = new GameObject("ScaffoldParent");
 
+        GameObject _obj = null;
         for (int i = 0; i < m_simpleAtkObjCount; i++)
         {
             _obj = Instantiate(m_simpleAtkObj, _simpleAtkParent.transform);
-            _obj.transform.position = m_atkObjBasicPos;
+            _obj.transform.position = m_objBasicPos;
             m_simpleAtkObjWaitQueue.Enqueue(_obj.GetComponent<SimpleAtk>());
 
         }
         for (int i = 0; i < m_rangeAtkObjCount; i++)
         {
             _obj = Instantiate(m_rangeAtkObj, _rangeAtkParent.transform);
-            _obj.transform.position = m_atkObjBasicPos;
+            _obj.transform.position = m_objBasicPos;
             m_rangeAtkObjWaitQueue.Enqueue(_obj.GetComponent<RangeAtk>());
+        }
+        for (int i = 0; i < m_scaffoldObjCount; i++)
+        {
+            _obj = Instantiate(m_scaffoldObj, _scaffoldParent.transform);
+            _obj.transform.position = m_objBasicPos;
+            m_scaffoldObjWaitQueue.Enqueue(_obj.GetComponent<Scaffold>());
         }
 
         StartCoroutine(IEChangeWall(0.0f));
@@ -356,10 +392,11 @@ public class GameManager : MonoBehaviour
             AtkData _atkData = new AtkData();
 
             _atkData.m_order = int.Parse(_data[i]["order"].ToString());
-            _atkData.m_type = StrToAtkType(_data[i]["type"].ToString());
+            _atkData.m_type = StrToAtkType(int.Parse(_data[i]["type"].ToString()));
             _atkData.m_isMove = StrToBool(_data[i]["isMove"].ToString());
             _atkData.m_genTime = float.Parse(_data[i]["genTime"].ToString());
-            _atkData.m_sizeY = float.Parse(_data[i]["sizeY"].ToString());
+            _atkData.m_speed = float.Parse(_data[i]["speed"].ToString());
+            _atkData.m_size = float.Parse(_data[i]["sizeY"].ToString());
 
             _atkData.m_position.x = float.Parse(_data[i]["positionX"].ToString());
             _atkData.m_position.y = float.Parse(_data[i]["positionY"].ToString());
@@ -377,24 +414,24 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="argStr">공격 타입 문자열</param>
     /// <returns>공격 타입 이넘</returns>
-    AtkType StrToAtkType(string argStr)
+    AtkType StrToAtkType(int argIndex)
     {
-        switch (argStr)
+        switch (argIndex)
         {
-            case "BlueSimpleAtk":
-                return AtkType.BlueSimpleAtk;
-            case "SimpleAtk":
+            case 1:
                 return AtkType.SimpleAtk;
-            case "PopAtk":
+            case 2:
+                return AtkType.BlueSimpleAtk;
+            case 3:
                 return AtkType.PopAtk;
-            case "RangeAtk":
+            case 4:
                 return AtkType.RangeAtk;
-            case "GravityAtk":
+            case 5:
                 return AtkType.GravityAtk;
-            case "Scaffold":
+            case 6:
                 return AtkType.Scaffold;
             default:
-                Debug.Log(argStr + " not allowed value");
+                Debug.Log(argIndex + " not allowed value");
                 return new AtkType();
         }
     }
@@ -418,16 +455,65 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// 현재 페이즈 시작
+    /// </summary>
+    void PhaseStart()
+    {
+        StartTimer();
+    }
+    /// <summary>
+    /// 시작된 페이즈 끝내기
+    /// </summary>
+    void PhaseOver()
+    {
+        m_phase++;
+        m_phaseTime = 0.0f;
+        m_phaseStartTime = 0.0f;
 
+        m_atkIndex = 0;
+        StopTimer();
+    }
+
+    /// <summary>
+    /// 타이밍 체크 루틴
+    /// </summary>
     void TimingCheck()
     {
         if (m_isTiming)
         {
             m_phaseStartTime += Time.deltaTime;
             m_phaseTime = Mathf.Floor(m_phaseStartTime) + Mathf.Round((m_phaseStartTime % 1.0f) * 10.0f) / 10.0f;
+
+            
+            if (m_atkDataList.Count <= m_atkIndex)
+            {
+                if(m_phaseTime >= m_atkDataList[m_atkIndex - 1].m_genTime + m_phaseOverWaitTime)
+                {
+                    Debug.Log("Over");
+                    PhaseOver();
+                }
+            }
+            else
+            {
+                if (m_atkDataList[m_atkIndex].m_genTime == m_phaseTime)
+                {
+                    
+
+                    GenObj(
+                        m_atkDataList[m_atkIndex].m_type,
+                        m_atkDataList[m_atkIndex].m_position,
+                        m_atkDataList[m_atkIndex].m_rotation,
+                        m_atkDataList[m_atkIndex].m_size,
+                        m_atkDataList[m_atkIndex].m_speed,
+                        m_atkDataList[m_atkIndex].m_isMove
+                        );
+
+                    m_atkIndex++;
+                }
+            }
         }
     }
-
     /// <summary>
     /// 타이머 시작
     /// </summary>
@@ -448,6 +534,111 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 오브젝트 프레임 이동
+    /// </summary>
+    void MoveObj()
+    {
+        foreach (SimpleAtk item in m_activeSimpleAtkObjList)
+        {
+            if (m_activeSimpleAtkObjList == null)
+            {
+                break;
+            }
+            if (item.m_isMove)
+            {
+                item.transform.Translate(Vector3.forward * item.m_speed * Time.deltaTime);
+
+                if (item.transform.position.x <= -m_wallHalfSize * 2 ||
+                    item.transform.position.x >= m_wallHalfSize * 2 ||
+                    item.transform.position.y <= -m_wallHalfSize ||
+                    item.transform.position.y >= m_wallHalfSize * 3 ||
+                    item.transform.position.z <= -m_wallHalfSize * 2 ||
+                    item.transform.position.z >= m_wallHalfSize * 2)
+                {
+                    item.transform.position = m_objBasicPos;
+                    item.ResetObj();
+
+                    m_toWaitSimpleAtkTmpList.Add(item);
+                }
+            }
+
+        }
+        foreach (Scaffold item in m_activeScaffoldObjList)
+        {
+            if(m_activeScaffoldObjList == null)
+            {
+                break;
+            }
+            if (item.m_isMove)
+            {
+                item.transform.Translate(Vector3.forward * item.m_speed * Time.deltaTime);
+
+                if (item.transform.position.x <= -m_wallHalfSize * 2 ||
+                    item.transform.position.x >= m_wallHalfSize * 2 ||
+                    item.transform.position.y <= -m_wallHalfSize ||
+                    item.transform.position.y >= m_wallHalfSize * 3 ||
+                    item.transform.position.z <= -m_wallHalfSize * 2 ||
+                    item.transform.position.z >= m_wallHalfSize * 2)
+                {
+                    item.transform.position = m_objBasicPos;
+                    item.ResetObj();
+
+                    m_toWaitScaffoldTmpList.Add(item);
+                }
+            }
+
+        }
+
+        foreach (SimpleAtk item in m_toWaitSimpleAtkTmpList)
+        {
+            WaitSimpleAtk(item);
+        }
+        foreach (Scaffold item in m_toWaitScaffoldTmpList)
+        {
+            WaitScaffold(item);
+        }
+
+        m_toWaitSimpleAtkTmpList.Clear();
+        m_toWaitScaffoldTmpList.Clear();
+    }
+
+    /// <summary>
+    /// 물체 생성
+    /// </summary>
+    /// <param name="argAtkType">타입</param>
+    /// <param name="argPosition">위치</param>
+    /// <param name="argRotation">방향</param>
+    /// <param name="argSize">크기</param>
+    /// <param name="argSpeed">속도</param>
+    /// <param name="argIsMove">움직이는지 안움직이는지</param>
+    void GenObj(AtkType argAtkType, Vector3 argPosition, Vector3 argRotation, float argSize, float argSpeed, bool argIsMove)
+    {
+        switch (argAtkType)
+        {
+            case AtkType.BlueSimpleAtk:
+                SimpleAtk(argPosition, argRotation, new Vector3(m_simpleAtkObjBasicSize, argSize, m_simpleAtkObjBasicSize), argSpeed, true);
+                return;
+            case AtkType.SimpleAtk:
+                SimpleAtk(argPosition, argRotation, new Vector3(m_simpleAtkObjBasicSize, argSize, m_simpleAtkObjBasicSize), argSpeed, false);
+                return;
+            case AtkType.PopAtk:
+                AllWallPopAtk();
+                return;
+            case AtkType.RangeAtk:
+                RangeAtk(argPosition, argRotation, new Vector3(argSize, argSize, argSize));
+                return;
+            case AtkType.GravityAtk:
+                GravityAtk(argRotation.y);
+                return;
+            case AtkType.Scaffold:
+                Scaffold(argPosition, argRotation, new Vector3(argSize, 1.0f, argSize), argSpeed, argIsMove);
+                return;
+            default:
+                Debug.Log("not allowed value");
+                return;
+        }
+    }
+    /// <summary>
     /// 단순 공격 생성
     /// </summary>
     /// <param name="argPosition">생성 위치</param>
@@ -466,41 +657,6 @@ public class GameManager : MonoBehaviour
         _atk.transform.localScale = argSize;
     }
     /// <summary>
-    /// 단순 공격 오브젝트 이동
-    /// </summary>
-    void SimpleAtkMove()
-    {
-        foreach(SimpleAtk item in m_activeSimpleAtkObjList)
-        {
-            if (item.m_isMove)
-            {
-                item.transform.Translate(Vector3.forward * item.m_speed * Time.deltaTime);
-
-                if (item.transform.position.x <= -m_wallHalfSize * 2 ||
-                    item.transform.position.x >= m_wallHalfSize * 2 ||
-                    item.transform.position.y <= -m_wallHalfSize ||
-                    item.transform.position.y >= m_wallHalfSize * 3 ||
-                    item.transform.position.z <= -m_wallHalfSize * 2 ||
-                    item.transform.position.z >= m_wallHalfSize * 2)
-                {
-                    item.transform.position = m_atkObjBasicPos;
-                    item.ResetObj();
-
-                    m_toWaitTmpList.Add(item);
-                }
-            }
-
-        }
-
-        foreach(SimpleAtk item in m_toWaitTmpList)
-        {
-            WaitSimpleAtk(item);
-        }
-
-        m_toWaitTmpList.Clear();
-    }
-
-    /// <summary>
     /// 원거리 공격
     /// </summary>
     /// <param name="argPosition">생성 위치</param>
@@ -512,6 +668,23 @@ public class GameManager : MonoBehaviour
     {
         RangeAtk _atk = ActiveRangeAtk();
         _atk.StartRangeAtk(m_rangeAtkWarnTime, m_rangeAtkTime);
+
+        _atk.transform.position = argPosition;
+        _atk.transform.rotation = Quaternion.Euler(argRotation);
+        _atk.transform.localScale = argSize;
+    }
+    /// <summary>
+    /// 발판 생성
+    /// </summary>
+    /// <param name="argPosition">생성 위치</param>
+    /// <param name="argRotation">생성 방향</param>
+    /// <param name="argSize">생성 크기</param>
+    /// <param name="argSpeed">생성 시 속도</param>
+    void Scaffold(Vector3 argPosition, Vector3 argRotation, Vector3 argSize, float argSpeed, bool argIsMove)
+    {
+        Scaffold _atk = ActiveScaffold();
+        _atk.m_speed = argSpeed;
+        _atk.m_isMove = argIsMove;
 
         _atk.transform.position = argPosition;
         _atk.transform.rotation = Quaternion.Euler(argRotation);
@@ -688,8 +861,18 @@ public class GameManager : MonoBehaviour
     /// <returns>대상</returns>
     RangeAtk ActiveRangeAtk()
     {
-        m_activeRangeAtkObjQueue.AddLast(m_rangeAtkObjWaitQueue.Dequeue());
-        return m_activeRangeAtkObjQueue.Last.Value;
+        m_activeRangeAtkObjList.AddLast(m_rangeAtkObjWaitQueue.Dequeue());
+        return m_activeRangeAtkObjList.Last.Value;
+    }
+    /// <summary>
+    /// 발판 활성화 큐로 이동
+    /// </summary>
+    /// <param name="argAtk">대상</param>
+    /// <returns>대상</returns>
+    Scaffold ActiveScaffold()
+    {
+        m_activeScaffoldObjList.AddLast(m_scaffoldObjWaitQueue.Dequeue());
+        return m_activeScaffoldObjList.Last.Value;
     }
 
     /// <summary>
@@ -700,7 +883,7 @@ public class GameManager : MonoBehaviour
     {
         m_activeSimpleAtkObjList.Remove(argAtk);
         m_simpleAtkObjWaitQueue.Enqueue(argAtk);
-        argAtk.transform.position = m_atkObjBasicPos;
+        argAtk.transform.position = m_objBasicPos;
         return argAtk;
     }
     /// <summary>
@@ -709,10 +892,21 @@ public class GameManager : MonoBehaviour
     /// <param name="argAtk"></param>
     public RangeAtk WaitRangeAtk(RangeAtk argAtk)
     {
-        m_activeRangeAtkObjQueue.Remove(argAtk);
+        m_activeRangeAtkObjList.Remove(argAtk);
         m_rangeAtkObjWaitQueue.Enqueue(argAtk);
-        argAtk.transform.position = m_atkObjBasicPos;
+        argAtk.transform.position = m_objBasicPos;
         return argAtk;
+    }
+    /// <summary>
+    /// 발판 대기 큐로 변경
+    /// </summary>
+    /// <param name="argAtk"></param>
+    public Scaffold WaitScaffold(Scaffold argScaff)
+    {
+        m_activeScaffoldObjList.Remove(argScaff);
+        m_scaffoldObjWaitQueue.Enqueue(argScaff);
+        argScaff.transform.position = m_objBasicPos;
+        return argScaff;
     }
 
     /// <summary>
@@ -726,7 +920,7 @@ public class GameManager : MonoBehaviour
         }
         foreach (SimpleAtk item in m_simpleAtkObjWaitQueue)
         {
-            item.gameObject.transform.position = m_atkObjBasicPos;
+            item.gameObject.transform.position = m_objBasicPos;
         }
     }
     /// <summary>
@@ -734,13 +928,27 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void AllRangeAtkObjReset()
     {
-        foreach (RangeAtk item in m_activeRangeAtkObjQueue)
+        foreach (RangeAtk item in m_activeRangeAtkObjList)
         {
             m_rangeAtkObjWaitQueue.Enqueue(item);
         }
         foreach (RangeAtk item in m_rangeAtkObjWaitQueue)
         {
-            item.gameObject.transform.position = m_atkObjBasicPos;
+            item.gameObject.transform.position = m_objBasicPos;
+        }
+    }
+    /// <summary>
+    /// 전체 원거리 공격 오브젝트 리셋
+    /// </summary>
+    public void AllScaffoldObjReset()
+    {
+        foreach (Scaffold item in m_activeScaffoldObjList)
+        {
+            m_scaffoldObjWaitQueue.Enqueue(item);
+        }
+        foreach (Scaffold item in m_scaffoldObjWaitQueue)
+        {
+            item.gameObject.transform.position = m_objBasicPos;
         }
     }
 
