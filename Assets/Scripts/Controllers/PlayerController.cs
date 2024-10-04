@@ -6,15 +6,18 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Common")]
     /// <summary>
-    /// 현재 접근한 상호작용 버튼
-    /// </summary>
-    [SerializeField]
-    GameObject m_InteractBtnObj = null;
-    /// <summary>
     /// 플레이어 콜리더 위치
     /// </summary>
     [SerializeField]
     Transform m_viewPlayerTransform = null;
+    /// <summary>
+    /// 기본 메테리얼
+    /// 상호작용 되었을 시 메테리얼
+    /// </summary>
+    [SerializeField]
+    Material m_standardInteractMat = null;
+    [SerializeField]
+    Material m_activeInteractMat = null;
 
     [Header("Camera")]
     /// <summary>
@@ -69,6 +72,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     float m_canDamageTime = 0.0f;
 
+    /// <summary>
+    /// 현재 접근한 상호작용 버튼
+    /// </summary>
+    private GameObject m_InteractBtnObj = null;
     /// <summary>
     /// ui매니저
     /// </summary>
@@ -160,7 +167,7 @@ public class PlayerController : MonoBehaviour
         if (m_canDamageFlage)
         {
             m_canDamageFlage = false;
-            SetLateHp += argManageHp;
+            GetLateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
         }
     }
@@ -173,16 +180,16 @@ public class PlayerController : MonoBehaviour
     {
         while (true)
         {
-            float _healthDifference = Mathf.Abs(SetHp - SetLateHp);
+            float _healthDifference = Mathf.Abs(GetHp - GetLateHp);
             if (_healthDifference > 0.1f)
             {
-                if (SetHp > SetLateHp)
+                if (GetHp > GetLateHp)
                 {
-                    SetHp -= 1;
+                    GetHp -= 1;
                 }
-                else if (SetHp < SetLateHp)
+                else if (GetHp < GetLateHp)
                 {
-                    SetHp += 1;
+                    GetHp += 1;
                 }
             }
 
@@ -291,12 +298,25 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void MouseBtnDownInputControll()
     {
-        if (m_InteractBtnObj != null && m_InteractBtnObj.name == "NextBtn")
+        if (Input.GetMouseButtonDown(0))
         {
-            GameManager.Instance.PhaseStart();
+            if (m_InteractBtnObj != null && m_InteractBtnObj.name == "NextBtn")
+            {
+                GameManager.Instance.PhaseStart();
+                m_InteractBtnObj.GetComponent<MeshRenderer>().material = m_standardInteractMat;
+                m_InteractBtnObj = null;
+            }
         }
     }
 
+    public Material GetStandardInteractMat
+    {
+        get { return m_standardInteractMat; }
+    }
+    public Material GetActiveInteractMat
+    {
+        get { return m_activeInteractMat; }
+    }
     public bool GetIsCanJumpFlag
     {
         get { return m_canJumpFlag; }
@@ -312,12 +332,12 @@ public class PlayerController : MonoBehaviour
         get { return m_canMoveFlage; }
         set { m_canMoveFlage = value; }
     }
-    public GameObject SetInteractBtnObj
+    public GameObject GetInteractBtnObj
     {
         get { return m_InteractBtnObj; }
         set { m_InteractBtnObj = value; }
     }
-    public float SetHp
+    public float GetHp
     {
         get 
         { 
@@ -326,15 +346,14 @@ public class PlayerController : MonoBehaviour
         set 
         {
             m_hp = value;
-            if (SetHp <= 0)
+            if (GetHp <= 0)
             {
-                //gameover
-                Debug.Log("gameOver");
+                GameManager.Instance.GameOver();
             }
             m_uiManager.HpSlider(m_hp);
         }
     }
-    public float SetLateHp
+    public float GetLateHp
     {
         get
         {
@@ -347,7 +366,7 @@ public class PlayerController : MonoBehaviour
             if (m_lateHp <= 1)
             {
                 m_lateHp = 1;
-                SetHp -= 1;
+                GetHp -= 1;
             }
 
             m_uiManager.LateHpSlider(m_lateHp);

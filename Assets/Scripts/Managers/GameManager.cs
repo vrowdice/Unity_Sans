@@ -1,7 +1,7 @@
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 //각 데이터의 스폰 순서는 각 공격 데이터의 처리를 확인하기 위해 필요
 //m_type
@@ -56,11 +56,12 @@ public class AtkData
     public float m_speed = 0.0f;
     //스폰 시간
     public float m_genTime = 0.0f;
+
     //공격 오브젝트 사이즈
-    public float m_size = 0.0f;
     //스폰 위치, 스폰 방향
     //움직이는 오브젝트는 정면으로 이동함
     //공격 방향도 로테이션에 따라 달라짐
+    public Vector3 m_size = new Vector3();
     public Vector3 m_position = new Vector3();
     public Vector3 m_rotation = new Vector3();
 }
@@ -73,6 +74,11 @@ public class GameManager : MonoBehaviour
     static GameManager g_gameManager;
 
     [Header("Common")]
+    /// <summary>
+    /// 현재 페이즈
+    /// </summary>
+    [SerializeField]
+    int m_phase = 0;
     /// <summary>
     /// 상호작용 가능한 오브젝트들
     /// </summary>
@@ -277,10 +283,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private int m_nowWall = 0;
     /// <summary>
-    /// 현재 페이즈
-    /// </summary>
-    private int m_phase = 0;
-    /// <summary>
     /// 현재 페이즈의 공격 진행 상황
     /// </summary>
     private int m_atkIndex = 0;
@@ -393,6 +395,12 @@ public class GameManager : MonoBehaviour
         m_atkDataList = new List<AtkData>();
         List<Dictionary<string, object>> _data = CSVReader.Read("Phase" + m_phase);
 
+        if(_data == null)
+        {
+            GameOver();
+            return;
+        }
+
         for (int i = 0; i < _data.Count; i++)
         {
             AtkData _atkData = new AtkData();
@@ -402,7 +410,10 @@ public class GameManager : MonoBehaviour
             _atkData.m_isMove = StrToBool(_data[i]["isMove"].ToString());
             _atkData.m_genTime = float.Parse(_data[i]["genTime"].ToString());
             _atkData.m_speed = float.Parse(_data[i]["speed"].ToString());
-            _atkData.m_size = float.Parse(_data[i]["sizeY"].ToString());
+
+            _atkData.m_size.x = float.Parse(_data[i]["sizeX"].ToString());
+            _atkData.m_size.y = float.Parse(_data[i]["sizeY"].ToString());
+            _atkData.m_size.z = float.Parse(_data[i]["sizeZ"].ToString());
 
             _atkData.m_position.x = float.Parse(_data[i]["positionX"].ToString());
             _atkData.m_position.y = float.Parse(_data[i]["positionY"].ToString());
@@ -468,6 +479,7 @@ public class GameManager : MonoBehaviour
     {
         if(m_atkDataList != null && !m_isTiming)
         {
+            m_InteractObj.SetActive(false);
             StartTimer();
         }
     }
@@ -476,6 +488,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void PhaseOver()
     {
+        m_InteractObj.SetActive(true);
+
         m_phase++;
         m_phaseTime = 0.0f;
         m_phaseStartTime = 0.0f;
@@ -483,6 +497,22 @@ public class GameManager : MonoBehaviour
         m_atkIndex = 0;
         StopTimer();
         GetCSVData();
+    }
+    /// <summary>
+    /// 게임 완전히 끝남
+    /// </summary>
+    public void GameOver()
+    {
+        Debug.Log("gameover");
+        m_InteractObj.SetActive(false);
+
+        m_phaseTime = 0.0f;
+        m_phaseStartTime = 0.0f;
+        m_atkIndex = 0;
+        StopTimer();
+
+        Destroy(this.gameObject);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     /// <summary>
@@ -505,7 +535,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                if (m_atkDataList[m_atkIndex].m_genTime == m_phaseTime)
+                if (m_atkDataList[m_atkIndex].m_genTime <= m_phaseTime)
                 {
                     GenObj(
                         m_atkDataList[m_atkIndex].m_type,
@@ -618,27 +648,27 @@ public class GameManager : MonoBehaviour
     /// <param name="argSize">크기</param>
     /// <param name="argSpeed">속도</param>
     /// <param name="argIsMove">움직이는지 안움직이는지</param>
-    void GenObj(AtkType argAtkType, Vector3 argPosition, Vector3 argRotation, float argSize, float argSpeed, bool argIsMove)
+    void GenObj(AtkType argAtkType, Vector3 argPosition, Vector3 argRotation, Vector3 argSize, float argSpeed, bool argIsMove)
     {
         switch (argAtkType)
         {
             case AtkType.BlueSimpleAtk:
-                SimpleAtk(argPosition, argRotation, new Vector3(m_simpleAtkObjBasicSize, argSize, m_simpleAtkObjBasicSize), argSpeed, true);
+                SimpleAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), argSpeed, true);
                 return;
             case AtkType.SimpleAtk:
-                SimpleAtk(argPosition, argRotation, new Vector3(m_simpleAtkObjBasicSize, argSize, m_simpleAtkObjBasicSize), argSpeed, false);
+                SimpleAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), argSpeed, false);
                 return;
             case AtkType.PopAtk:
                 AllWallPopAtk();
                 return;
             case AtkType.RangeAtk:
-                RangeAtk(argPosition, argRotation, new Vector3(argSize, argSize, argSize));
+                RangeAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z));
                 return;
             case AtkType.GravityAtk:
                 GravityAtk(argRotation.y);
                 return;
             case AtkType.Scaffold:
-                Scaffold(argPosition, argRotation, new Vector3(argSize, 1.0f, argSize), argSpeed, argIsMove);
+                Scaffold(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), argSpeed, argIsMove);
                 return;
             default:
                 Debug.Log("not allowed value");

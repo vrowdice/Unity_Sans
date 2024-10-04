@@ -5,15 +5,6 @@ using UnityEngine;
 public class UICheckSensor : MonoBehaviour
 {
     /// <summary>
-    /// 기본 메테리얼
-    /// 상호작용 되었을 시 메테리얼
-    /// </summary>
-    [SerializeField]
-    Material m_standardInteractMat = null;
-    [SerializeField]
-    Material m_activeInteractMat = null;
-
-    /// <summary>
     /// 플레이어 컨트롤러 인스턴스
     /// </summary>
     private PlayerController m_playerController = null;
@@ -34,16 +25,16 @@ public class UICheckSensor : MonoBehaviour
     {
         if (other.gameObject.tag == "InteractBtn")
         {
-            other.gameObject.GetComponent<MeshRenderer>().material = m_activeInteractMat;
-            m_playerController.SetInteractBtnObj = other.gameObject;
+            other.gameObject.GetComponent<MeshRenderer>().material = m_playerController.GetActiveInteractMat;
+            m_playerController.GetInteractBtnObj = other.gameObject;
         }
     }
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.tag == "InteractBtn")
         {
-            other.gameObject.GetComponent<MeshRenderer>().material = m_standardInteractMat;
-            m_playerController.SetInteractBtnObj = null;
+            other.gameObject.GetComponent<MeshRenderer>().material = m_playerController.GetStandardInteractMat;
+            m_playerController.GetInteractBtnObj = null;
         }
     }
 }
