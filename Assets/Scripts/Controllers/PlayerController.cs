@@ -6,17 +6,22 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Common")]
     /// <summary>
+    /// 현재 접근한 상호작용 버튼
+    /// </summary>
+    [SerializeField]
+    GameObject m_InteractBtnObj = null;
+    /// <summary>
     /// 플레이어 콜리더 위치
     /// </summary>
     [SerializeField]
-    Transform m_viewPlayerTransform;
+    Transform m_viewPlayerTransform = null;
 
     [Header("Camera")]
     /// <summary>
     /// 플레이어 3인칭 카메라 위치 베이스 위치
     /// </summary>
     [SerializeField]
-    Transform m_cameraBaseTransform;
+    Transform m_cameraBaseTransform = null;
     /// <summary>
     /// 마우스 감도
     /// </summary>
@@ -53,13 +58,11 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     [SerializeField]
     int m_maxHp = 0;
-
     /// <summary>
     /// hp와 late hp 동기화 분기 시간
     /// </summary>
     [SerializeField]
     float m_maxHpSyncTime = 0.0f;
-
     /// <summary>
     /// 다시 데미지를 입을 시간 간격
     /// </summary>
@@ -70,43 +73,35 @@ public class PlayerController : MonoBehaviour
     /// ui매니저
     /// </summary>
     private UIManager m_uiManager = null;
-
     /// <summary>
     /// 리지드바디
     /// </summary>
     private Rigidbody m_rigidbody;
-
     /// <summary>
     /// 마우스 회전값 저장
     /// </summary>
     private float m_mouseX = 0f;
     private float m_mouseY = 0f;
-
     /// <summary>
     /// 바닥과 접촉 판정일 경우 true
     /// </summary>
     private bool m_groundFlag = false;
-
     /// <summary>
     /// 점프 가능한 경우 true
     /// </summary>
     private bool m_canJumpFlag = false;
-
     /// <summary>
     /// 움직임 가능한 경우 true
     /// </summary>
     private bool m_canMoveFlage = true;
-
     /// <summary>
     /// 데미지를 입을 수 있는 상황인 경우 true
     /// </summary>
     private bool m_canDamageFlage = true;
-
     /// <summary>
     /// 체력
     /// </summary>
     private float m_hp = 0;
-
     /// <summary>
     /// 늦게 정해질 체력 값
     /// </summary>
@@ -139,6 +134,7 @@ public class PlayerController : MonoBehaviour
         }
 
         CameraControll();
+        MouseBtnDownInputControll();
     }
 
     private void OnTriggerStay(Collider other)
@@ -164,7 +160,7 @@ public class PlayerController : MonoBehaviour
         if (m_canDamageFlage)
         {
             m_canDamageFlage = false;
-            IsLateHp += argManageHp;
+            SetLateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
         }
     }
@@ -177,16 +173,16 @@ public class PlayerController : MonoBehaviour
     {
         while (true)
         {
-            float _healthDifference = Mathf.Abs(IsHp - IsLateHp);
+            float _healthDifference = Mathf.Abs(SetHp - SetLateHp);
             if (_healthDifference > 0.1f)
             {
-                if (IsHp > IsLateHp)
+                if (SetHp > SetLateHp)
                 {
-                    IsHp -= 1;
+                    SetHp -= 1;
                 }
-                else if (IsHp < IsLateHp)
+                else if (SetHp < SetLateHp)
                 {
-                    IsHp += 1;
+                    SetHp += 1;
                 }
             }
 
@@ -290,22 +286,38 @@ public class PlayerController : MonoBehaviour
         m_cameraBaseTransform.transform.position = transform.position;
     }
 
-    public bool IsCanJumpFlag
+    /// <summary>
+    /// 마우스 버튼 클릭 설정
+    /// </summary>
+    void MouseBtnDownInputControll()
+    {
+        if (m_InteractBtnObj != null && m_InteractBtnObj.name == "NextBtn")
+        {
+            GameManager.Instance.PhaseStart();
+        }
+    }
+
+    public bool GetIsCanJumpFlag
     {
         get { return m_canJumpFlag; }
         set { m_canJumpFlag = value; }
     }
-    public bool IsGroundFlag
+    public bool GetIsGroundFlag
     {
         get { return m_groundFlag; }
         set { m_groundFlag = value; }
     }
-    public bool IsCanMoveFlage
+    public bool GetCanMoveFlage
     {
         get { return m_canMoveFlage; }
         set { m_canMoveFlage = value; }
     }
-    public float IsHp
+    public GameObject SetInteractBtnObj
+    {
+        get { return m_InteractBtnObj; }
+        set { m_InteractBtnObj = value; }
+    }
+    public float SetHp
     {
         get 
         { 
@@ -314,7 +326,7 @@ public class PlayerController : MonoBehaviour
         set 
         {
             m_hp = value;
-            if (IsHp <= 0)
+            if (SetHp <= 0)
             {
                 //gameover
                 Debug.Log("gameOver");
@@ -322,7 +334,7 @@ public class PlayerController : MonoBehaviour
             m_uiManager.HpSlider(m_hp);
         }
     }
-    public float IsLateHp
+    public float SetLateHp
     {
         get
         {
@@ -335,7 +347,7 @@ public class PlayerController : MonoBehaviour
             if (m_lateHp <= 1)
             {
                 m_lateHp = 1;
-                IsHp -= 1;
+                SetHp -= 1;
             }
 
             m_uiManager.LateHpSlider(m_lateHp);

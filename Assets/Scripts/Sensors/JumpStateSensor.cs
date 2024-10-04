@@ -28,15 +28,15 @@ public class JumpStateSensor : MonoBehaviour
     {
         if (other.gameObject.tag == "Terrain")  
         {
-            m_playerController.IsCanJumpFlag = true;
-            m_playerController.IsGroundFlag = true;
+            m_playerController.GetIsCanJumpFlag = true;
+            m_playerController.GetIsGroundFlag = true;
         }
     }
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.tag == "Terrain")
         {
-            m_playerController.IsGroundFlag = false;
+            m_playerController.GetIsGroundFlag = false;
         }
     }
 }

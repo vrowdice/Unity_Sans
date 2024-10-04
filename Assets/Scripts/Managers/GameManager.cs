@@ -74,8 +74,14 @@ public class GameManager : MonoBehaviour
 
     [Header("Common")]
     /// <summary>
+    /// 상호작용 가능한 오브젝트들
+    /// </summary>
+    [SerializeField]
+    GameObject m_InteractObj = null;
+    /// <summary>
     /// 페이즈가 끝나고 기다리는 시간
     /// </summary>
+    [SerializeField]
     float m_phaseOverWaitTime = 4.0f;
 
     [Header("Wall")]
@@ -308,7 +314,6 @@ public class GameManager : MonoBehaviour
         StartSetting();
 
         PhaseStart();
-
         //AllWallPopAtk();
         //SimpleAtk(new Vector3(20.0f, 0.0f, -10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 8.0f, false);
         //SimpleAtk(new Vector3(20.0f, 0.0f, 0.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 5.0f, true);
@@ -385,6 +390,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void GetCSVData()
     {
+        m_atkDataList = new List<AtkData>();
         List<Dictionary<string, object>> _data = CSVReader.Read("Phase" + m_phase);
 
         for (int i = 0; i < _data.Count; i++)
@@ -458,14 +464,17 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 현재 페이즈 시작
     /// </summary>
-    void PhaseStart()
+    public void PhaseStart()
     {
-        StartTimer();
+        if(m_atkDataList != null && !m_isTiming)
+        {
+            StartTimer();
+        }
     }
     /// <summary>
     /// 시작된 페이즈 끝내기
     /// </summary>
-    void PhaseOver()
+    public void PhaseOver()
     {
         m_phase++;
         m_phaseTime = 0.0f;
@@ -473,6 +482,7 @@ public class GameManager : MonoBehaviour
 
         m_atkIndex = 0;
         StopTimer();
+        GetCSVData();
     }
 
     /// <summary>
@@ -490,7 +500,6 @@ public class GameManager : MonoBehaviour
             {
                 if(m_phaseTime >= m_atkDataList[m_atkIndex - 1].m_genTime + m_phaseOverWaitTime)
                 {
-                    Debug.Log("Over");
                     PhaseOver();
                 }
             }
@@ -498,8 +507,6 @@ public class GameManager : MonoBehaviour
             {
                 if (m_atkDataList[m_atkIndex].m_genTime == m_phaseTime)
                 {
-                    
-
                     GenObj(
                         m_atkDataList[m_atkIndex].m_type,
                         m_atkDataList[m_atkIndex].m_position,
@@ -816,10 +823,12 @@ public class GameManager : MonoBehaviour
             if (m_ascensionCompleteFlag && m_playerController.transform.position.y <
                 m_wallCenterPos.position.y)
             {
-                m_playerController.IsCanMoveFlage = false;
+                m_playerController.GetCanMoveFlage = false;
                 m_playerController.transform.position = Vector3.MoveTowards(
                     m_playerController.transform.position,
-                    m_wallCenterPos.position,
+                    new Vector3(m_playerController.transform.position.x,
+                    m_wallCenterPos.position.y,
+                    m_playerController.transform.position.z),
                     m_gravityAtkSpeed * Time.deltaTime);
             }
             else
@@ -835,7 +844,7 @@ public class GameManager : MonoBehaviour
                     m_gravityAtkSpeed * 4 * Time.deltaTime);
                 if (m_playerController.transform.position.y <= 0.0f)
                 {
-                    m_playerController.IsCanMoveFlage = true;
+                    m_playerController.GetCanMoveFlage = true;
                     m_playerController.GetComponent<Rigidbody>().useGravity = true;
                     yield break;
                 }
@@ -951,11 +960,7 @@ public class GameManager : MonoBehaviour
             item.gameObject.transform.position = m_objBasicPos;
         }
     }
-
-
-    /// <summary>
-    /// 자기 자신 인스턴스
-    /// </summary>
+    
     public static GameManager Instance
     {
         get
@@ -963,16 +968,20 @@ public class GameManager : MonoBehaviour
             return g_gameManager;
         }
     }
-    public Material IsAtkObjMat
+    public Material GetAtkObjMat
     {
         get { return m_atkObjMat; }
     }
-    public Material IsMovePlayerAtkObjMat
+    public Material GetMovePlayerAtkObjMat
     {
         get { return m_movePlayerAtkObjMat; }
     }
-    public Material IsWarnMat
+    public Material GetWarnMat
     {
         get { return m_warningMat; }
+    }
+    public bool GetIsTiming
+    {
+        get { return m_isTiming; }
     }
 }

@@ -25,13 +25,13 @@ public class SimpleAtk : MonoBehaviour
     {
         if (argIsMovePlayerAtk)
         {
-            GetComponent<MeshRenderer>().material = GameManager.Instance.IsMovePlayerAtkObjMat;
+            GetComponent<MeshRenderer>().material = GameManager.Instance.GetMovePlayerAtkObjMat;
             m_isMovePlayerAtk = true;
             gameObject.tag = "MovePlayerAttack";
         }
         else
         {
-            GetComponent<MeshRenderer>().material = GameManager.Instance.IsAtkObjMat;
+            GetComponent<MeshRenderer>().material = GameManager.Instance.GetAtkObjMat;
             m_isMovePlayerAtk = false;
             gameObject.tag = "Attack";
         }
