@@ -9,6 +9,7 @@ TagManager:
   - Attack
   - MovePlayerAttack
   - InteractBtn
+  - Scaffold
   layers:
   - Default
   - TransparentFX

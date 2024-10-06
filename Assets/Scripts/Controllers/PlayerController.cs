@@ -6,11 +6,6 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Common")]
     /// <summary>
-    /// 플레이어 콜리더 위치
-    /// </summary>
-    [SerializeField]
-    Transform m_viewPlayerTransform = null;
-    /// <summary>
     /// 기본 메테리얼
     /// 상호작용 되었을 시 메테리얼
     /// </summary>
@@ -40,15 +35,20 @@ public class PlayerController : MonoBehaviour
 
     [Header("Transform")]
     /// <summary>
+    /// 중력 속도
+    /// </summary>
+    [SerializeField]
+    public float m_fallSpeed = 12f;
+    /// <summary>
     /// 점프 속도
     /// </summary>
     [SerializeField]
-    float m_jumpSpeed = 50.0f;
+    float m_jumpSpeed = 15.0f;
     /// <summary>
     /// 최대 점프 높이
     /// </summary>
     [SerializeField]
-    float m_MaxJumpHight = 50.0f;
+    float m_maxJumpHight = 10.0f;
     /// <summary>
     /// 직선 움직임 속도
     /// </summary>
@@ -77,13 +77,21 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private GameObject m_InteractBtnObj = null;
     /// <summary>
+    /// 현재 딛고있는 발판
+    /// </summary>
+    private Scaffold m_groundScaffold = null;
+    /// <summary>
     /// ui매니저
     /// </summary>
     private UIManager m_uiManager = null;
     /// <summary>
     /// 리지드바디
     /// </summary>
-    private Rigidbody m_rigidbody;
+    private Rigidbody m_rigidbody = null;
+    /// <summary>
+    /// 현재 최대 점프 가능 위치
+    /// </summary>
+    private float m_maxJumpPos = 0.0f;
     /// <summary>
     /// 마우스 회전값 저장
     /// </summary>
@@ -93,6 +101,10 @@ public class PlayerController : MonoBehaviour
     /// 바닥과 접촉 판정일 경우 true
     /// </summary>
     private bool m_groundFlag = false;
+    /// <summary>
+    /// 어느 벽과 접촉중일 경우 true
+    /// </summary>
+    private bool m_reachWallFlag = false;
     /// <summary>
     /// 점프 가능한 경우 true
     /// </summary>
@@ -114,20 +126,44 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private float m_lateHp = 0;
 
+    private void OnTriggerStay(Collider other)
+    {
+        if (GameManager.Instance.GetIsTiming)
+        {
+            if (other.tag == "Attack")
+            {
+                GetDamage(-1);
+            }
+            else if (other.tag == "MovePlayerAttack")
+            {
+                if (m_rigidbody.velocity.magnitude >= 0.1f)
+                {
+                    GetDamage(-1);
+                }
+            }
+        }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "Terrain")
+        {
+            m_reachWallFlag = true;
+        }
+    }
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.tag == "Terrain")
+        {
+            m_reachWallFlag = false;
+        }
+    }
+
     /// <summary>
     /// start
     /// </summary>
     private void Start()
     {
-        m_uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
-        m_rigidbody = GetComponent<Rigidbody>();
-
-        m_hp = m_maxHp;
-        m_lateHp = m_maxHp;
-
-        m_uiManager.SetSliders(m_maxHp);
-
-        StartCoroutine(IESyncHealth());
+        StartSetting();
     }
     /// <summary>
     /// update
@@ -140,24 +176,45 @@ public class PlayerController : MonoBehaviour
             JumpControll();
         }
 
+        ConstantGravity();
         CameraControll();
         MouseBtnDownInputControll();
     }
-
-    private void OnTriggerStay(Collider other)
+    /// <summary>
+    /// 시작 세팅
+    /// </summary>
+    void StartSetting()
     {
-        if(other.tag == "Attack")
+        m_uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+        m_rigidbody = GetComponent<Rigidbody>();
+
+        m_hp = m_maxHp;
+        m_lateHp = m_maxHp;
+
+        m_uiManager.SetSliders(m_maxHp);
+
+        StartCoroutine(IESyncHealth());
+    }
+
+    /// <summary>
+    /// 정속 중력 부과
+    /// </summary>
+    void ConstantGravity()
+    {
+        if (!m_groundFlag && !m_canJumpFlag)
         {
-            GetDamage(-1);
+            transform.Translate(m_fallSpeed * Vector3.down * Time.deltaTime);
         }
-        else if(other.tag == "MovePlayerAttack")
+        else
         {
-            if(m_rigidbody.velocity.magnitude >= 0.1f)
+            if(m_groundScaffold != null && !m_reachWallFlag)
             {
-                GetDamage(-1);
+                Vector3 _scaffoldMovement = m_groundScaffold.transform.forward * m_groundScaffold.m_speed * Time.deltaTime;
+                transform.Translate(_scaffoldMovement, Space.World);
             }
         }
     }
+
     /// <summary>
     /// 데미지 부과
     /// </summary>
@@ -212,43 +269,33 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void JumpControll()
     {
-        //점프 입력 중
-        if(Input.GetAxisRaw("Jump") != 0.0f)
+        if (m_canJumpFlag)
         {
-            if (m_canJumpFlag)
+            //점프 입력 중
+            if (Input.GetAxisRaw("Jump") >= 0.1f)
             {
-                if (transform.position.y >= m_MaxJumpHight)
+                if (m_groundFlag)
+                {
+                    m_maxJumpPos = transform.position.y + m_maxJumpHight;
+                }
+
+                if (transform.position.y >= m_maxJumpPos - 0.3f)
                 {
                     CantJump();
                 }
-                m_rigidbody.useGravity = false;
+
                 transform.position = Vector3.MoveTowards(
                     transform.position,
-                    new Vector3(transform.position.x, m_MaxJumpHight, transform.position.z),
+                    new Vector3(transform.position.x, m_maxJumpPos, transform.position.z),
                     m_jumpSpeed * Time.deltaTime);
             }
+            //점프 입력 없음
             else
-            {
-                if (transform.position.y >= m_MaxJumpHight)
-                {
-                    CantJump();
-                }
-            }
-        }
-        //점프 입력 없음
-        else if(Input.GetAxisRaw("Jump") <= 0.0f)
-        {
-            if (m_canJumpFlag)
             {
                 if (!m_groundFlag)
                 {
-                    m_rigidbody.useGravity = true;
                     CantJump();
                 }
-            }
-            else
-            {
-                CantJump();
             }
         }
     }
@@ -257,7 +304,6 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void CantJump()
     {
-        m_rigidbody.useGravity = true;
         m_canJumpFlag = false;
     }
 
@@ -300,15 +346,50 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (m_InteractBtnObj != null && m_InteractBtnObj.name == "NextBtn")
+            if(m_InteractBtnObj != null)
             {
-                GameManager.Instance.PhaseStart();
-                m_InteractBtnObj.GetComponent<MeshRenderer>().material = m_standardInteractMat;
-                m_InteractBtnObj = null;
+                if (m_InteractBtnObj.name == "NextBtn")
+                {
+                    if (GameManager.Instance.GetIsGameOver)
+                    {
+                        GameManager.Instance.RestartGame();
+                        ResetPlayerState();
+                    }
+                    else
+                    {
+                        m_InteractBtnObj.GetComponent<MeshRenderer>().material = m_standardInteractMat;
+                        m_InteractBtnObj = null;
+                        GameManager.Instance.PhaseStart();
+                    }
+                }
+                else if (m_InteractBtnObj.name == "RecoverBtn")
+                {
+                    Debug.Log("Recover");
+                }
             }
         }
     }
 
+    /// <summary>
+    /// 플레이어 상태 초기화
+    /// </summary>
+    public void ResetPlayerState()
+    {
+        transform.position = new Vector3(0.0f, 3.0f, 0.0f);
+        GetLateHp = m_maxHp;
+        GetHp = m_maxHp;
+    }
+
+    public GameObject GetInteractBtnObj
+    {
+        get { return m_InteractBtnObj; }
+        set { m_InteractBtnObj = value; }
+    }
+    public Scaffold GetGroundScaffold
+    {
+        get { return m_groundScaffold; }
+        set { m_groundScaffold = value; }
+    }
     public Material GetStandardInteractMat
     {
         get { return m_standardInteractMat; }
@@ -316,6 +397,11 @@ public class PlayerController : MonoBehaviour
     public Material GetActiveInteractMat
     {
         get { return m_activeInteractMat; }
+    }
+    public bool GetIsCanDamageFlage
+    {
+        get { return m_canDamageFlage; }
+        set { m_canDamageFlage = value; }
     }
     public bool GetIsCanJumpFlag
     {
@@ -332,11 +418,6 @@ public class PlayerController : MonoBehaviour
         get { return m_canMoveFlage; }
         set { m_canMoveFlage = value; }
     }
-    public GameObject GetInteractBtnObj
-    {
-        get { return m_InteractBtnObj; }
-        set { m_InteractBtnObj = value; }
-    }
     public float GetHp
     {
         get 
@@ -348,7 +429,7 @@ public class PlayerController : MonoBehaviour
             m_hp = value;
             if (GetHp <= 0)
             {
-                GameManager.Instance.GameOver();
+                GameManager.Instance.GameOver(false);
             }
             m_uiManager.HpSlider(m_hp);
         }

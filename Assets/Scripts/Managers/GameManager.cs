@@ -80,11 +80,6 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     int m_phase = 0;
     /// <summary>
-    /// 상호작용 가능한 오브젝트들
-    /// </summary>
-    [SerializeField]
-    GameObject m_InteractObj = null;
-    /// <summary>
     /// 페이즈가 끝나고 기다리는 시간
     /// </summary>
     [SerializeField]
@@ -155,11 +150,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     [SerializeField]
     int m_scaffoldObjCount = 50;
-    /// <summary>
-    /// 기본 사이즈
-    /// </summary>
-    [SerializeField]
-    int m_scaffoldBasicSize = 3;
 
     [Header("Simple Atteck")]
     /// <summary>
@@ -184,8 +174,6 @@ public class GameManager : MonoBehaviour
     GameObject m_rangeAtkObj = null;
     [SerializeField]
     int m_rangeAtkObjCount = 30;
-    [SerializeField]
-    int m_rangeAtkObjBasicSize = 3;
     /// <summary>
     /// 원거리 공격 경고 시간
     /// </summary>
@@ -231,6 +219,14 @@ public class GameManager : MonoBehaviour
     /// 플레이어 컨트롤러 스크립트
     /// </summary>
     private PlayerController m_playerController = null;
+
+    /// <summary>
+    /// 유저에게 정보를 알려주는 오브젝트 그룹
+    /// </summary>
+    GameObject m_UIObj = null;
+    GameObject m_gameOverTextObj = null;
+    GameObject m_youWinTextObj = null;
+
     /// <summary>
     /// 적 공격 데이터 리스트
     /// </summary>
@@ -299,9 +295,9 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private bool m_isTiming = false;
     /// <summary>
-    /// 벽 회전 완료 플래그
+    /// 게임 오버 플래그
     /// </summary>
-    private bool m_wallRotCompleteFlag = false;
+    private bool m_isGameOver = false;
     /// <summary>
     /// 상승 완료 플래그
     /// </summary>
@@ -385,6 +381,10 @@ public class GameManager : MonoBehaviour
         _obj = Instantiate(m_popWarningObj);
         m_popWarningObj = _obj;
         m_popWarningObj.SetActive(false);
+
+        m_UIObj = GameObject.Find("UIObj").gameObject;
+        m_gameOverTextObj = m_UIObj.transform.Find("GameOverTextObj").gameObject;
+        m_youWinTextObj = m_UIObj.transform.Find("YouWinTextObj").gameObject;
     }
     
     /// <summary>
@@ -397,7 +397,7 @@ public class GameManager : MonoBehaviour
 
         if(_data == null)
         {
-            GameOver();
+            GameOver(true);
             return;
         }
 
@@ -479,7 +479,7 @@ public class GameManager : MonoBehaviour
     {
         if(m_atkDataList != null && !m_isTiming)
         {
-            m_InteractObj.SetActive(false);
+            m_UIObj.SetActive(false);
             StartTimer();
         }
     }
@@ -488,7 +488,9 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void PhaseOver()
     {
-        m_InteractObj.SetActive(true);
+        m_UIObj.SetActive(true);
+        m_youWinTextObj.SetActive(false);
+        m_gameOverTextObj.SetActive(false);
 
         m_phase++;
         m_phaseTime = 0.0f;
@@ -501,18 +503,41 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 게임 완전히 끝남
     /// </summary>
-    public void GameOver()
+    public void GameOver(bool argWinOrDefeat)
     {
-        Debug.Log("gameover");
-        m_InteractObj.SetActive(false);
+        m_isGameOver = true;
 
+        ResetAllObj();
+
+        m_UIObj.SetActive(true);
+        if (argWinOrDefeat)
+        {
+            m_youWinTextObj.SetActive(true);
+            m_gameOverTextObj.SetActive(false);
+        }
+        else
+        {
+            m_youWinTextObj.SetActive(false);
+            m_gameOverTextObj.SetActive(true);
+        }
+
+        m_phase = 0;
+        GetCSVData();
+        StopTimer();
+        m_playerController.ResetPlayerState();
+    }
+    /// <summary>
+    /// 게임 재시작
+    /// </summary>
+    public void RestartGame()
+    {
+        m_isGameOver = false;
+        m_phase = 0;
         m_phaseTime = 0.0f;
         m_phaseStartTime = 0.0f;
         m_atkIndex = 0;
-        StopTimer();
 
-        Destroy(this.gameObject);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        PhaseStart();
     }
 
     /// <summary>
@@ -749,6 +774,7 @@ public class GameManager : MonoBehaviour
                 _simAtk.m_isMove = false;
 
                 _simAtk.transform.position = new Vector3(o, -10.0f, i);
+                _simAtk.transform.localScale = new Vector3(3.0f, 10.0f, 3.0f);
                 m_activeSimpleAtkObjList.AddLast(_simAtk);
             }
         }
@@ -818,8 +844,6 @@ public class GameManager : MonoBehaviour
     /// <returns>none</returns>
     IEnumerator IEChangeWall(float argDirZ)
     {
-        m_wallRotCompleteFlag = false;
-
         for (int i = 0; i < m_wallList.Count; i++)
         {
             m_wallList[i].gameObject.GetComponent<MeshRenderer>().material = m_transparentWallMat;
@@ -845,13 +869,12 @@ public class GameManager : MonoBehaviour
     IEnumerator IEGravityAtk()
     {
         m_ascensionCompleteFlag = true;
-        m_playerController.GetComponent<Rigidbody>().useGravity = false;
 
         while (true)
         {
             // 상승 상태일 때
             if (m_ascensionCompleteFlag && m_playerController.transform.position.y <
-                m_wallCenterPos.position.y)
+                m_wallCenterPos.position.y - 1.0f)
             {
                 m_playerController.GetCanMoveFlage = false;
                 m_playerController.transform.position = Vector3.MoveTowards(
@@ -875,7 +898,6 @@ public class GameManager : MonoBehaviour
                 if (m_playerController.transform.position.y <= 0.0f)
                 {
                     m_playerController.GetCanMoveFlage = true;
-                    m_playerController.GetComponent<Rigidbody>().useGravity = true;
                     yield break;
                 }
             }
@@ -990,6 +1012,15 @@ public class GameManager : MonoBehaviour
             item.gameObject.transform.position = m_objBasicPos;
         }
     }
+    /// <summary>
+    /// 모든 오브젝트 초기화
+    /// </summary>
+    public void ResetAllObj()
+    {
+        AllRangeAtkObjReset();
+        AllScaffoldObjReset();
+        AllSimpleAtkObjReset();
+    }
     
     public static GameManager Instance
     {
@@ -1013,5 +1044,9 @@ public class GameManager : MonoBehaviour
     public bool GetIsTiming
     {
         get { return m_isTiming; }
+    }
+    public bool GetIsGameOver
+    {
+        get { return m_isGameOver; }
     }
 }

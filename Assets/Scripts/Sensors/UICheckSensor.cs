@@ -15,12 +15,6 @@ public class UICheckSensor : MonoBehaviour
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "InteractBtn")
