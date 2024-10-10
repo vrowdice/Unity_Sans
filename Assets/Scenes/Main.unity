@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.17276807, g: 0.21589197, b: 0.29782572, a: 1}
+  m_IndirectSpecularColor: {r: 0.17276844, g: 0.21589246, b: 0.2978263, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -929,6 +929,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_standardInteractMat: {fileID: 2100000, guid: 9cba7c41e77ec2146aa85ad84f25cef8, type: 2}
   m_activeInteractMat: {fileID: 2100000, guid: 7d1c69001abe24c43b9c96df3a943690, type: 2}
+  m_maxRecoverCount: 5
+  m_recoverHp: 40
   m_cameraBaseTransform: {fileID: 253360093}
   m_mouseSensitivity: 5
   m_camMinXRotation: -80
@@ -1279,6 +1281,23 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &817491812 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3459793983287669024, guid: b5f17566a81dcc74aa43e98a37e8bcbb, type: 3}
+  m_PrefabInstance: {fileID: 3459793983407696824}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &817491814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 817491812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e1ebafe2bece8f46961d6380b29b27c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &922706470
 GameObject:
   m_ObjectHideFlags: 0
@@ -1365,7 +1384,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 200
+  far clip plane: 150
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -2185,12 +2204,16 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
       propertyPath: m_phase
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
       propertyPath: m_wallCenterPos
       value: 
       objectReference: {fileID: 352186531}
+    - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
+      propertyPath: m_popAtkWarnTime
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
       propertyPath: m_wallList.Array.data[0]
       value: 

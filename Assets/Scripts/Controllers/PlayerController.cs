@@ -16,10 +16,12 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// 최대 회복 횟수
     /// </summary>
+    [SerializeField]
     int m_maxRecoverCount = 5;
     /// <summary>
     /// 회복 할 hp 계수
     /// </summary>
+    [SerializeField]
     float m_recoverHp = 40.0f;
 
 
@@ -251,7 +253,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        m_recoverCount--;
+        GetRecoverCount--;
         GetHp += argManageHp;
         GetLateHp += argManageHp;
     }
@@ -405,7 +407,7 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(0.0f, 4.0f, 0.0f);
         m_hp = m_maxHp;
         m_lateHp = m_maxHp;
-        m_recoverCount = m_maxRecoverCount;
+        GetRecoverCount = m_maxRecoverCount;
     }
 
     public GameObject GetInteractBtnObj
@@ -446,6 +448,25 @@ public class PlayerController : MonoBehaviour
         get { return m_canMoveFlage; }
         set { m_canMoveFlage = value; }
     }
+    public int GetRecoverCount
+    {
+        get { return m_recoverCount; }
+        set
+        {
+            m_recoverCount = value;
+
+            if(m_recoverCount <= 0)
+            {
+                m_recoverCount = 0;
+            }
+            if(m_recoverCount >= m_maxRecoverCount)
+            {
+                m_recoverCount = m_maxRecoverCount;
+            }
+
+            GameManager.Instance.GetUIObjManager.SetRecoverCountTextObj(m_recoverCount);
+        }
+    }
     public float GetHp
     {
         get 
@@ -455,9 +476,13 @@ public class PlayerController : MonoBehaviour
         set 
         {
             m_hp = value;
-            if (GetHp <= 0)
+            if (m_hp <= 0)
             {
                 GameManager.Instance.GameOver(false);
+            }
+            else if(m_hp >= m_maxHp)
+            {
+                m_hp = m_maxHp;
             }
             m_uiManager.HpSlider(m_hp);
         }
@@ -477,7 +502,10 @@ public class PlayerController : MonoBehaviour
                 m_lateHp = 1;
                 GetHp -= 1;
             }
-
+            else if (m_lateHp >= m_maxHp)
+            {
+                m_lateHp = m_maxHp;
+            }
             m_uiManager.LateHpSlider(m_lateHp);
         }
     }
