@@ -214,7 +214,6 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     float m_gravityAtkSpeed = 20.0f;
 
-
     /// <summary>
     /// 플레이어 컨트롤러 스크립트
     /// </summary>
@@ -310,15 +309,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         StartSetting();
-
         PhaseStart();
-        //AllWallPopAtk();
-        //SimpleAtk(new Vector3(20.0f, 0.0f, -10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 8.0f, false);
-        //SimpleAtk(new Vector3(20.0f, 0.0f, 0.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 5.0f, true);
-        //SimpleAtk(new Vector3(20.0f, 0.0f, 10.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(5.0f, 20.0f, 5.0f), 3.0f, false);
-        //RangeAtk(new Vector3(-15.0f, 2.0f, -30.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(5.0f, 5.0f, 5.0f));
-        //RangeAtk(new Vector3(-5.0f, 2.0f, -30.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(5.0f, 5.0f, 5.0f));
-        //Scaffold(new Vector3(20.0f, 0.0f, 0.0f), new Vector3(0.0f, -90.0f, 0.0f), new Vector3(10.0f, 1.0f, 10.0f), 5.0f, true);
     }
     void Update()
     {
@@ -540,6 +531,10 @@ public class GameManager : MonoBehaviour
         PhaseStart();
     }
 
+    void RepeatGen()
+    {
+
+    }
     /// <summary>
     /// 타이밍 체크 루틴
     /// </summary>

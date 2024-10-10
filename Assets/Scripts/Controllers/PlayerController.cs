@@ -13,6 +13,15 @@ public class PlayerController : MonoBehaviour
     Material m_standardInteractMat = null;
     [SerializeField]
     Material m_activeInteractMat = null;
+    /// <summary>
+    /// 최대 회복 횟수
+    /// </summary>
+    int m_maxRecoverCount = 5;
+    /// <summary>
+    /// 회복 할 hp 계수
+    /// </summary>
+    float m_recoverHp = 40.0f;
+
 
     [Header("Camera")]
     /// <summary>
@@ -89,6 +98,10 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private Rigidbody m_rigidbody = null;
     /// <summary>
+    /// 현재 회복 가능한 횟수
+    /// </summary>
+    private int m_recoverCount = 0;
+    /// <summary>
     /// 현재 최대 점프 가능 위치
     /// </summary>
     private float m_maxJumpPos = 0.0f;
@@ -97,6 +110,14 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private float m_mouseX = 0f;
     private float m_mouseY = 0f;
+    /// <summary>
+    /// 체력
+    /// </summary>
+    private float m_hp = 0;
+    /// <summary>
+    /// 늦게 정해질 체력 값
+    /// </summary>
+    private float m_lateHp = 0;
     /// <summary>
     /// 바닥과 접촉 판정일 경우 true
     /// </summary>
@@ -117,14 +138,6 @@ public class PlayerController : MonoBehaviour
     /// 데미지를 입을 수 있는 상황인 경우 true
     /// </summary>
     private bool m_canDamageFlage = true;
-    /// <summary>
-    /// 체력
-    /// </summary>
-    private float m_hp = 0;
-    /// <summary>
-    /// 늦게 정해질 체력 값
-    /// </summary>
-    private float m_lateHp = 0;
 
     private void OnTriggerStay(Collider other)
     {
@@ -188,9 +201,7 @@ public class PlayerController : MonoBehaviour
         m_uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         m_rigidbody = GetComponent<Rigidbody>();
 
-        m_hp = m_maxHp;
-        m_lateHp = m_maxHp;
-
+        ResetPlayerState();
         m_uiManager.SetSliders(m_maxHp);
 
         StartCoroutine(IESyncHealth());
@@ -218,7 +229,7 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// 데미지 부과
     /// </summary>
-    /// <param name="argManageHp"></param>
+    /// <param name="argManageHp">hp 감소</param>
     void GetDamage(float argManageHp)
     {
         if (m_canDamageFlage)
@@ -227,6 +238,22 @@ public class PlayerController : MonoBehaviour
             GetLateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
         }
+    }
+
+    /// <summary>
+    /// 체력 회복
+    /// </summary>
+    /// <param name="argManageHp">hp 증가</param>
+    void Recover(float argManageHp)
+    {
+        if(m_recoverCount <= 0 || m_lateHp >= m_maxHp)
+        {
+            return;
+        }
+
+        m_recoverCount--;
+        GetHp += argManageHp;
+        GetLateHp += argManageHp;
     }
 
     /// <summary>
@@ -364,7 +391,7 @@ public class PlayerController : MonoBehaviour
                 }
                 else if (m_InteractBtnObj.name == "RecoverBtn")
                 {
-                    Debug.Log("Recover");
+                    Recover(m_recoverHp);
                 }
             }
         }
@@ -375,9 +402,10 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void ResetPlayerState()
     {
-        transform.position = new Vector3(0.0f, 3.0f, 0.0f);
-        GetLateHp = m_maxHp;
-        GetHp = m_maxHp;
+        transform.position = new Vector3(0.0f, 4.0f, 0.0f);
+        m_hp = m_maxHp;
+        m_lateHp = m_maxHp;
+        m_recoverCount = m_maxRecoverCount;
     }
 
     public GameObject GetInteractBtnObj
