@@ -940,7 +940,6 @@ MonoBehaviour:
   m_maxHp: 92
   m_maxHpSyncTime: 1
   m_canDamageTime: 0.02
-  m_maxJumpPos: 0
 --- !u!4 &658110710
 Transform:
   m_ObjectHideFlags: 0
@@ -2186,7 +2185,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
       propertyPath: m_phase
-      value: 0
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
       propertyPath: m_wallCenterPos
