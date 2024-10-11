@@ -248,7 +248,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="argManageHp">hp ¡ı∞°</param>
     void Recover(float argManageHp)
     {
-        if(m_recoverCount <= 0 || GetLateHp >= GetHp)
+        if(m_recoverCount <= 0)
         {
             return;
         }

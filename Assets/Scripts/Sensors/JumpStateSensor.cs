@@ -15,15 +15,14 @@ public class JumpStateSensor : MonoBehaviour
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
     }
 
-    /*
     private void OnTriggerStay(Collider other)
     {
         if (other.gameObject.tag == "Terrain")
         {
-            m_playerController.IsGroundFlag = true;
+            m_playerController.GetIsGroundFlag = true;
         }
     }
-    */
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Terrain")  

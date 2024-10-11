@@ -21,7 +21,7 @@ public class RepeatAtkData
     /// </summary>
     public float m_repeatOverTime = 0.0f;
     /// <summary>
-    /// 최근에 반복한 시간
+    /// 앞으로 반복할 시간
     /// </summary>
-    public float m_repeatedTime = 0.0f;
+    public float m_toRepeatTime = 0.0f;
 }

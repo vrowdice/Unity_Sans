@@ -52,10 +52,15 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     int m_phase = 0;
     /// <summary>
-    /// 페이즈가 끝나고 기다리는 시간
+    /// 패이즈가 시작되는 시간 조정
     /// </summary>
     [SerializeField]
-    float m_phaseOverWaitTime = 4.0f;
+    List<float> m_phaseStartTimeSet = new List<float>();
+    /// <summary>
+    /// 페이즈가 끝나는 시간
+    /// </summary>
+    [SerializeField]
+    List<float> m_phaseOverTime = new List<float>();
 
     [Header("Wall")]
     /// <summary>
@@ -355,6 +360,7 @@ public class GameManager : MonoBehaviour
         int _tmpRepeatAtkIndex = -1;
         int _tmpRepeatAtkOrder = 0;
         m_atkDataList = new List<AtkData>();
+        m_repeatAtkDataList = new List<RepeatAtkData>();
         List<Dictionary<string, object>> _data = CSVReader.Read("Phase" + m_phase);
 
         if(_data == null)
@@ -410,7 +416,7 @@ public class GameManager : MonoBehaviour
                 {
                     if(m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatTime == 0.0f)
                     {
-                        m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatTime = m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatStartTime - _atkData.m_genTime;
+                        m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatTime = _atkData.m_genTime - m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatStartTime;
                     }
                     else if(m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatOverTime == 0.0f)
                     {
@@ -492,8 +498,8 @@ public class GameManager : MonoBehaviour
         m_phase++;
         m_phaseTime = 0.0f;
         m_phaseStartTime = 0.0f;
-
         m_atkIndex = 0;
+
         StopTimer();
         GetCSVData();
     }
@@ -527,72 +533,68 @@ public class GameManager : MonoBehaviour
         PhaseStart();
     }
 
-    void RepeatGen()
-    {
-
-    }
     /// <summary>
     /// 타이밍 체크 루틴
     /// </summary>
     void TimingCheck()
     {
-        if(m_atkDataList == null)
+        if(m_atkDataList == null || !m_isTiming)
         {
             return;
         }
 
-        if (m_isTiming)
+        if(m_phaseOverTime[m_phase] <= m_phaseTime)
         {
-            m_phaseStartTime += Time.deltaTime;
-            m_phaseTime = Mathf.Floor(m_phaseStartTime) + Mathf.Round((m_phaseStartTime % 1.0f) * 10.0f) / 10.0f;
+            PhaseOver();
+        }
 
-            //반복 공격 작동
-            if(m_repeatAtkDataList.Count > 0)
+        m_phaseStartTime += Time.deltaTime;
+        m_phaseTime = Mathf.Floor(m_phaseStartTime) + Mathf.Round((m_phaseStartTime % 1.0f) * 10.0f) / 10.0f;
+
+        //반복 공격 작동
+        if (m_repeatAtkDataList.Count > 0)
+        {
+            for (int i = m_repeatAtkDataList.Count - 1; i >= 0; i--)
             {
-                foreach (RepeatAtkData item in m_repeatAtkDataList)
+                var item = m_repeatAtkDataList[i];
+
+                // 반복 중지 시
+                if (item.m_repeatOverTime >= m_phaseTime && item.m_repeatOverTime > 0.0f)
                 {
-                    if (item.m_repeatOverTime >= m_phaseTime && item.m_repeatOverTime > 0.0f)
-                    {
-                        m_repeatAtkDataList.Remove(item);
-                        continue;
-                    }
+                    m_repeatAtkDataList.RemoveAt(i);
+                    continue;
+                }
 
-                    if (item.m_repeatStartTime <= m_phaseTime
-                        && item.m_repeatedTime != m_phaseTime
-                        && item.m_repeatedTime == 0.0f)
-                    {
-                        GenObjAsAtkData(item.m_atkData);
-                        continue;
-                    }
+                // 처음 실행 시
+                if (item.m_repeatStartTime + m_phaseStartTimeSet[m_phase] <= m_phaseTime && item.m_toRepeatTime == 0.0f)
+                {
+                    item.m_toRepeatTime = m_phaseTime + item.m_repeatTime;
+                    GenObjAsAtkData(item.m_atkData);
+                    continue;
+                }
 
-                    if (m_phaseTime % item.m_repeatTime == 0
-                        && item.m_repeatedTime != m_phaseTime)
-                    {
-                        item.m_repeatedTime = m_phaseTime;
-                        GenObjAsAtkData(item.m_atkData);
-                    }
+                // 기본 반복 생성
+                if (item.m_toRepeatTime <= m_phaseTime && item.m_repeatStartTime <= m_phaseTime)
+                {
+                    item.m_toRepeatTime = m_phaseTime + item.m_repeatTime;
+                    GenObjAsAtkData(item.m_atkData);
+                    continue;
                 }
             }
-            
-            //일반 지정 공격 작동
-            if(m_atkDataList.Count > 0)
-            {
-                if (m_atkDataList.Count <= m_atkIndex)
-                {
-                    if (m_phaseTime >= m_atkDataList[m_atkIndex - 1].m_genTime + m_phaseOverWaitTime)
-                    {
-                        PhaseOver();
-                    }
-                }
-                else
-                {
-                    if (m_atkDataList[m_atkIndex].m_genTime <= m_phaseTime)
-                    {
-                        GenObjAsAtkData(m_atkDataList[m_atkIndex]);
 
-                        m_atkIndex++;
-                    }
-                }
+        }
+
+        //일반 지정 공격 작동
+        if (m_atkDataList.Count > 0)
+        {
+            if(m_atkDataList.Count <= m_atkIndex)
+            {
+                return;
+            }
+            if (m_atkDataList[m_atkIndex].m_genTime + m_phaseStartTimeSet[m_phase] <= m_phaseTime)
+            {
+                GenObjAsAtkData(m_atkDataList[m_atkIndex]);
+                m_atkIndex++;
             }
         }
     }
