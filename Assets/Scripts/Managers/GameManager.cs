@@ -38,57 +38,6 @@ public enum AtkType
     Scaffold, //6 index
 }
 
-/// <summary>
-/// 반복 공격 데이터
-/// </summary>
-public class RepeatAtkData
-{
-    /// <summary>
-    /// 공격 데이터
-    /// </summary>
-    public AtkData m_atkData = new AtkData();
-    /// <summary>
-    /// 반복 시작 시간
-    /// </summary>
-    public float m_repeatStartTime = 0.0f;
-    /// <summary>
-    /// 반복 시간
-    /// </summary>
-    public float m_repeatTime = 0.0f;
-    /// <summary>
-    /// 반복 끝나는 시간
-    /// </summary>
-    public float m_repeatOverTime = 0.0f;
-}
-
-/// <summary>
-/// 공격 데이터
-/// </summary>
-public class AtkData
-{
-    //스폰 순서
-    public int m_order = -1;
-    //공격 타입
-    public AtkType m_type = new AtkType();
-    //움직이는지 안움직이는지
-    //데이터에서는 0과 1로 표현
-    //0 = false
-    //1 = true
-    public bool m_isMove = false;
-    //움직이는 속도
-    public float m_speed = 0.0f;
-    //스폰 시간
-    public float m_genTime = 0.0f;
-
-    //공격 오브젝트 사이즈
-    //스폰 위치, 스폰 방향
-    //움직이는 오브젝트는 정면으로 이동함
-    //공격 방향도 로테이션에 따라 달라짐
-    public Vector3 m_size = new Vector3();
-    public Vector3 m_position = new Vector3();
-    public Vector3 m_rotation = new Vector3();
-}
-
 public class GameManager : MonoBehaviour
 {
     /// <summary>
@@ -587,40 +536,62 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void TimingCheck()
     {
+        if(m_atkDataList == null)
+        {
+            return;
+        }
+
         if (m_isTiming)
         {
             m_phaseStartTime += Time.deltaTime;
             m_phaseTime = Mathf.Floor(m_phaseStartTime) + Mathf.Round((m_phaseStartTime % 1.0f) * 10.0f) / 10.0f;
 
-            foreach(RepeatAtkData item in m_repeatAtkDataList)
+            //반복 공격 작동
+            if(m_repeatAtkDataList.Count > 0)
             {
-                if (item.m_repeatStartTime <= m_phaseTime)
+                foreach (RepeatAtkData item in m_repeatAtkDataList)
                 {
+                    if (item.m_repeatOverTime >= m_phaseTime && item.m_repeatOverTime > 0.0f)
+                    {
+                        m_repeatAtkDataList.Remove(item);
+                        continue;
+                    }
 
+                    if (item.m_repeatStartTime <= m_phaseTime
+                        && item.m_repeatedTime != m_phaseTime
+                        && item.m_repeatedTime == 0.0f)
+                    {
+                        GenObjAsAtkData(item.m_atkData);
+                        continue;
+                    }
+
+                    if (m_phaseTime % item.m_repeatTime == 0
+                        && item.m_repeatedTime != m_phaseTime)
+                    {
+                        item.m_repeatedTime = m_phaseTime;
+                        GenObjAsAtkData(item.m_atkData);
+                    }
                 }
             }
             
-            if (m_atkDataList.Count <= m_atkIndex)
+            //일반 지정 공격 작동
+            if(m_atkDataList.Count > 0)
             {
-                if(m_phaseTime >= m_atkDataList[m_atkIndex - 1].m_genTime + m_phaseOverWaitTime)
+                if (m_atkDataList.Count <= m_atkIndex)
                 {
-                    PhaseOver();
+                    if (m_phaseTime >= m_atkDataList[m_atkIndex - 1].m_genTime + m_phaseOverWaitTime)
+                    {
+                        PhaseOver();
+                    }
                 }
-            }
-            else
-            {
-                if (m_atkDataList[m_atkIndex].m_genTime <= m_phaseTime)
+                else
                 {
-                    GenObj(
-                        m_atkDataList[m_atkIndex].m_type,
-                        m_atkDataList[m_atkIndex].m_position,
-                        m_atkDataList[m_atkIndex].m_rotation,
-                        m_atkDataList[m_atkIndex].m_size,
-                        m_atkDataList[m_atkIndex].m_speed,
-                        m_atkDataList[m_atkIndex].m_isMove
-                        );
+                    if (m_atkDataList[m_atkIndex].m_genTime <= m_phaseTime)
+                    {
+                        GenObjAsAtkData(m_atkDataList[m_atkIndex]);
 
-                    m_atkIndex++;
+                        m_atkIndex++;
+                    }
                 }
             }
         }
@@ -713,6 +684,17 @@ public class GameManager : MonoBehaviour
         m_toWaitScaffoldTmpList.Clear();
     }
 
+    void GenObjAsAtkData(AtkData argAtkData)
+    {
+        GenObj(
+        argAtkData.m_type,
+        argAtkData.m_position,
+        argAtkData.m_rotation,
+        argAtkData.m_size,
+        argAtkData.m_speed,
+        argAtkData.m_isMove
+        );
+    }
     /// <summary>
     /// 물체 생성
     /// </summary>

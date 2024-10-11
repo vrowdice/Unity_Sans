@@ -248,7 +248,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="argManageHp">hp ¡ı∞°</param>
     void Recover(float argManageHp)
     {
-        if(m_recoverCount <= 0 || m_lateHp >= m_maxHp)
+        if(m_recoverCount <= 0 || GetLateHp >= GetHp)
         {
             return;
         }
@@ -272,10 +272,6 @@ public class PlayerController : MonoBehaviour
                 if (GetHp > GetLateHp)
                 {
                     GetHp -= 1;
-                }
-                else if (GetHp < GetLateHp)
-                {
-                    GetHp += 1;
                 }
             }
 
@@ -405,8 +401,8 @@ public class PlayerController : MonoBehaviour
     public void ResetPlayerState()
     {
         transform.position = new Vector3(0.0f, 4.0f, 0.0f);
-        m_hp = m_maxHp;
-        m_lateHp = m_maxHp;
+        GetHp = m_maxHp;
+        GetLateHp = m_maxHp;
         GetRecoverCount = m_maxRecoverCount;
     }
 
