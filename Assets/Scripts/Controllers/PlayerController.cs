@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
     /// 최대 회복 횟수
     /// </summary>
     [SerializeField]
-    int m_maxRecoverCount = 5;
+    int m_maxRecoverCount = 2;
     /// <summary>
     /// 회복 할 hp 계수
     /// </summary>
@@ -240,6 +240,8 @@ public class PlayerController : MonoBehaviour
             m_canDamageFlage = false;
             GetLateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
+
+            GameManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.GetSoundManager.GetSound.m_hit);
         }
     }
 

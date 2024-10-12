@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d041b40959aea14186f56a0ecda5d96, type: 3}
+  m_Name: Sans
+  m_EditorClassIdentifier: 
+  m_backGround: {fileID: 8300000, guid: 7317ef5cbd457744eacc008f20d043a7, type: 3}
+  m_hit: {fileID: 8300000, guid: 1d22068746bc34747a00cdf7361e175c, type: 3}
+  m_heal: {fileID: 8300000, guid: 1c5257307f8aef246aa066ece94e263a, type: 3}
+  m_hitGround: {fileID: 8300000, guid: 1d22068746bc34747a00cdf7361e175c, type: 3}
+  m_gravityAtk: {fileID: 8300000, guid: 1613c28d47178de4f89223d8d63a070a, type: 3}
+  m_popAtk: {fileID: 8300000, guid: ea08741c210ae7e4fb6233b6f02638c3, type: 3}
+  m_rangeAtk: {fileID: 8300000, guid: af0c7b36909bf7c4285895d4e71cc2f7, type: 3}

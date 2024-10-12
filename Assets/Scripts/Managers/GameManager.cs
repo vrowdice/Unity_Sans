@@ -196,6 +196,10 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private PlayerController m_playerController = null;
     /// <summary>
+    /// 사운드 매니저 스크립트
+    /// </summary>
+    private SoundManager m_soundManager = null;
+    /// <summary>
     /// UI 오브젝트 관리 스크립트
     /// </summary>
     private UIObjManager m_uIObjManager = null;
@@ -311,6 +315,7 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
+        m_soundManager = GetComponent<SoundManager>();
         m_uIObjManager = GameObject.Find("UIObj").GetComponent<UIObjManager>();
 
         GetCSVData();
@@ -361,10 +366,12 @@ public class GameManager : MonoBehaviour
         int _tmpRepeatAtkOrder = 0;
         m_atkDataList = new List<AtkData>();
         m_repeatAtkDataList = new List<RepeatAtkData>();
+        //Phase data's name = "Phase + N"
         List<Dictionary<string, object>> _data = CSVReader.Read("Phase" + m_phase);
 
         if(_data == null)
         {
+            //데이터가 존재하지 않으면 승리
             GameOver(true);
             return;
         }
@@ -373,10 +380,10 @@ public class GameManager : MonoBehaviour
         {
             if (_data[i]["order"].ToString() == "")
             {
-                Debug.Log("om");
                 continue;
             }
 
+            //데이터 생성
             AtkData _atkData = new AtkData();
 
             _atkData.m_order = int.Parse(_data[i]["order"].ToString());
@@ -397,6 +404,7 @@ public class GameManager : MonoBehaviour
             _atkData.m_rotation.y = float.Parse(_data[i]["rotationY"].ToString());
             _atkData.m_rotation.z = float.Parse(_data[i]["rotationZ"].ToString());
 
+            //order가 음수인 경우 RepeatAtkData 생성
             if (_atkData.m_order < 0)
             {
                 if(_tmpRepeatAtkOrder != _atkData.m_order)
@@ -723,7 +731,7 @@ public class GameManager : MonoBehaviour
                 RangeAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z));
                 return;
             case AtkType.GravityAtk:
-                GravityAtk(argRotation.y);
+                GravityAtk(argRotation.z);
                 return;
             case AtkType.Scaffold:
                 Scaffold(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), argSpeed, argIsMove);
@@ -767,6 +775,8 @@ public class GameManager : MonoBehaviour
         _atk.transform.position = argPosition;
         _atk.transform.rotation = Quaternion.Euler(argRotation);
         _atk.transform.localScale = argSize;
+
+        m_soundManager.PlayEffectSound(m_soundManager.GetSound.m_rangeAtk);
     }
     /// <summary>
     /// 발판 생성
@@ -824,6 +834,8 @@ public class GameManager : MonoBehaviour
                 item.PopAtk(m_popAtkActiveTime, m_popAtkSpeed, m_popAtkMaxHeight);
             }
         }
+
+        m_soundManager.PlayEffectSound(m_soundManager.GetSound.m_popAtk);
     }
     /// <summary>
     /// 전체 단순 공격 코루틴
@@ -845,6 +857,8 @@ public class GameManager : MonoBehaviour
     /// <param name="argDirZ">공격 방향</param>
     void GravityAtk(float argDirZ)
     {
+        m_soundManager.PlayEffectSound(m_soundManager.GetSound.m_gravityAtk);
+
         StartCoroutine(IEChangeWall(argDirZ));
         StartCoroutine(IEGravityAtk());
     }
@@ -931,6 +945,9 @@ public class GameManager : MonoBehaviour
                 if (m_playerController.transform.position.y <= 0.0f)
                 {
                     m_playerController.GetCanMoveFlage = true;
+
+                    m_soundManager.PlayEffectSound(m_soundManager.GetSound.m_hitGround);
+
                     yield break;
                 }
             }
@@ -1061,6 +1078,10 @@ public class GameManager : MonoBehaviour
         {
             return g_gameManager;
         }
+    }
+    public SoundManager GetSoundManager
+    {
+        get { return m_soundManager; }
     }
     public UIObjManager GetUIObjManager
     {
