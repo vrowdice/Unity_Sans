@@ -288,7 +288,7 @@ public class GameManager : MonoBehaviour
         StartSetting();
         PhaseStart();
     }
-    void Update()
+    private void FixedUpdate()
     {
         MoveObj();
         TimingCheck();
@@ -548,7 +548,7 @@ public class GameManager : MonoBehaviour
             PhaseOver();
         }
 
-        m_phaseStartTime += Time.deltaTime;
+        m_phaseStartTime += Time.fixedDeltaTime;
         m_phaseTime = Mathf.Floor(m_phaseStartTime) + Mathf.Round((m_phaseStartTime % 1.0f) * 10.0f) / 10.0f;
 
         //반복 공격 작동
@@ -630,7 +630,7 @@ public class GameManager : MonoBehaviour
             }
             if (item.m_isMove)
             {
-                item.transform.Translate(Vector3.forward * item.m_speed * Time.deltaTime);
+                item.transform.Translate(Vector3.forward * item.m_speed * Time.fixedDeltaTime);
 
                 if (item.transform.position.x <= -m_wallHalfSize * 2 ||
                     item.transform.position.x >= m_wallHalfSize * 2 ||
@@ -655,7 +655,7 @@ public class GameManager : MonoBehaviour
             }
             if (item.m_isMove)
             {
-                item.transform.Translate(Vector3.forward * item.m_speed * Time.deltaTime);
+                item.transform.Translate(Vector3.forward * item.m_speed * Time.fixedDeltaTime);
 
                 if (item.transform.position.x <= -m_wallHalfSize * 2 ||
                     item.transform.position.x >= m_wallHalfSize * 2 ||

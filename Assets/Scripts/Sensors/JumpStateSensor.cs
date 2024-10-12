@@ -14,40 +14,25 @@ public class JumpStateSensor : MonoBehaviour
     {
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
     }
-
     private void OnTriggerStay(Collider other)
     {
         if (other.gameObject.tag == "Terrain")
         {
-            m_playerController.GetIsGroundFlag = true;
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.tag == "Terrain")  
-        {
             m_playerController.GetIsCanJumpFlag = true;
             m_playerController.GetIsGroundFlag = true;
-
             m_playerController.GetGroundScaffold = null;
         }
         else if (other.gameObject.tag == "Scaffold")
         {
             m_playerController.GetIsCanJumpFlag = true;
             m_playerController.GetIsGroundFlag = true;
-
             m_playerController.GetGroundScaffold = other.GetComponent<Scaffold>();
         }
     }
+
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.tag == "Terrain")
-        {
-            m_playerController.GetIsGroundFlag = false;
-            m_playerController.GetGroundScaffold = null;
-        }
-        else if (other.gameObject.tag == "Scaffold")
+        if (other.gameObject.tag == "Terrain" || other.gameObject.tag == "Scaffold")
         {
             m_playerController.GetIsGroundFlag = false;
             m_playerController.GetGroundScaffold = null;

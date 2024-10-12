@@ -158,6 +158,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Terrain")
@@ -180,10 +181,7 @@ public class PlayerController : MonoBehaviour
     {
         StartSetting();
     }
-    /// <summary>
-    /// update
-    /// </summary>
-    private void Update()
+    private void FixedUpdate()
     {
         if (m_canMoveFlage)
         {
@@ -195,6 +193,7 @@ public class PlayerController : MonoBehaviour
         CameraControll();
         MouseBtnDownInputControll();
     }
+
     /// <summary>
     /// 시작 세팅
     /// </summary>
@@ -216,14 +215,16 @@ public class PlayerController : MonoBehaviour
     {
         if (!m_groundFlag && !m_canJumpFlag)
         {
-            transform.Translate(m_fallSpeed * Vector3.down * Time.deltaTime);
+            Vector3 velocity = m_rigidbody.velocity;
+            velocity.y = -m_fallSpeed;
+            m_rigidbody.velocity = velocity;
         }
         else
         {
-            if(m_groundScaffold != null && !m_reachWallFlag)
+            if (m_groundScaffold != null && !m_reachWallFlag)
             {
-                Vector3 _scaffoldMovement = m_groundScaffold.transform.forward * m_groundScaffold.m_speed * Time.deltaTime;
-                transform.Translate(_scaffoldMovement, Space.World);
+                Vector3 _scaffoldMovement = m_groundScaffold.transform.forward * m_groundScaffold.m_speed * Time.fixedDeltaTime;
+                m_rigidbody.MovePosition(m_rigidbody.position + _scaffoldMovement);
             }
         }
     }
@@ -312,7 +313,7 @@ public class PlayerController : MonoBehaviour
                 transform.position = Vector3.MoveTowards(
                     transform.position,
                     new Vector3(transform.position.x, m_maxJumpPos, transform.position.z),
-                    m_jumpSpeed * Time.deltaTime);
+                    m_jumpSpeed * Time.fixedDeltaTime);
             }
             //점프 입력 없음
             else
@@ -334,7 +335,7 @@ public class PlayerController : MonoBehaviour
 
     /// <summary>
     /// 이동을 위한 키 입력 및 전송
-    /// </summary>s
+    /// </summary>
     void MoveControll()
     {
         Vector3 _vector = new Vector3();
@@ -343,6 +344,7 @@ public class PlayerController : MonoBehaviour
 
         _vector = transform.TransformDirection(_vector);
         Vector3 velocity = m_rigidbody.velocity;
+
         velocity.x = _vector.x * m_moveSpeed;
         velocity.z = _vector.z * m_moveSpeed;
 
