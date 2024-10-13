@@ -191,6 +191,9 @@ public class PlayerController : MonoBehaviour
 
         ConstantGravity();
         CameraControll();
+    }
+    private void Update()
+    {
         MouseBtnDownInputControll();
     }
 
@@ -259,6 +262,8 @@ public class PlayerController : MonoBehaviour
         GetRecoverCount--;
         GetHp += argManageHp;
         GetLateHp += argManageHp;
+
+        GameManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.GetSoundManager.GetSound.m_heal);
     }
 
     /// <summary>
