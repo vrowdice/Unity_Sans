@@ -244,7 +244,7 @@ public class PlayerController : MonoBehaviour
             GetLateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
 
-            GameManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.GetSoundManager.GetSound.m_hit);
+            GameManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.GetRoundData.m_soundData.m_hit);
         }
     }
 
@@ -263,7 +263,7 @@ public class PlayerController : MonoBehaviour
         GetHp += argManageHp;
         GetLateHp += argManageHp;
 
-        GameManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.GetSoundManager.GetSound.m_heal);
+        GameManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.GetRoundData.m_soundData.m_heal);
     }
 
     /// <summary>

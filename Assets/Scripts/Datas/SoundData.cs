@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Sound Asset", menuName = "New Sound Asset")]
-public class Sound : ScriptableObject
+[CreateAssetMenu(fileName = "Sound Asset", menuName = "New SoundData")]
+public class SoundData : ScriptableObject
 {
     /// <summary>
     /// 메인 테마 송

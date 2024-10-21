@@ -5,11 +5,6 @@ using UnityEngine;
 public class SoundManager : MonoBehaviour
 {
     /// <summary>
-    /// 사운드 (추후 다른 라운드 사운드도 적용 예정)
-    /// </summary>
-    [SerializeField]
-    Sound m_roundSound = null;
-    /// <summary>
     /// 백그라운드 오디오 소스
     /// </summary>
     private AudioSource m_backGroundSoundAS = null;
@@ -30,8 +25,10 @@ public class SoundManager : MonoBehaviour
         m_effectSoundAS.PlayOneShot(argAudioClip);
     }
 
-    public Sound GetSound
+    public void PlayBackGroundSound(AudioClip argAudioClip)
     {
-        get { return m_roundSound; }
+        m_backGroundSoundAS.clip = argAudioClip;
+        m_backGroundSoundAS.loop = true;
+        m_backGroundSoundAS.Play();
     }
 }

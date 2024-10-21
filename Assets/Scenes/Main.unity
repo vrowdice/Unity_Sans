@@ -386,12 +386,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 484178123, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 484178123, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
+      propertyPath: m_audioClip
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
       propertyPath: m_phase
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
+      propertyPath: m_roundData
+      value: 
+      objectReference: {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
     - target: {fileID: 745785846001667972, guid: d7e8c7281bbaaf94db6467eed2824bfd, type: 3}
       propertyPath: m_wallCenterPos
       value: 

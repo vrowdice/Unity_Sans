@@ -24,20 +24,6 @@ using UnityEngine.SceneManagement;
 //공격 방향을 설정하며 움직이는 방향을 설정하고 물체의 직접적인 방향을 설정해서 가로의 공격이 생길 수도 있고 세로의 공격이 생길 수도 있음
 
 
-/// <summary>
-/// 적 공격 타입 이넘
-/// 데이터 상에서는 각 인덱스를 부여받음
-/// </summary>
-public enum AtkType
-{
-    SimpleAtk, //1 index
-    BlueSimpleAtk, //2 index
-    PopAtk, //3 index
-    RangeAtk, //4 index
-    GravityAtk, //5 index
-    Scaffold, //6 index
-}
-
 public class GameManager : MonoBehaviour
 {
     /// <summary>
@@ -47,32 +33,18 @@ public class GameManager : MonoBehaviour
 
     [Header("Common")]
     /// <summary>
+    /// 현재 라운드 데이터
+    /// 해당 데이터로 페이즈 데이터를 불러옴
+    /// </summary>
+    [SerializeField]
+    RoundData m_roundData = null;
+    /// <summary>
     /// 현재 페이즈
     /// </summary>
     [SerializeField]
     int m_phase = 0;
-    /// <summary>
-    /// 패이즈가 시작되는 시간 조정
-    /// </summary>
-    [SerializeField]
-    List<float> m_phaseStartTimeSet = new List<float>();
-    /// <summary>
-    /// 페이즈가 끝나는 시간
-    /// </summary>
-    [SerializeField]
-    List<float> m_phaseOverTime = new List<float>();
 
     [Header("Wall")]
-    /// <summary>
-    /// (지형)벽 중심
-    /// </summary>
-    [SerializeField]
-    Transform m_wallCenterPos = null;
-    /// <summary>
-    /// (지형)벽 리스트
-    /// </summary>
-    [SerializeField]
-    List<GameObject> m_wallList = new List<GameObject>();
     /// <summary>
     /// 벽 변환 속도
     /// </summary>
@@ -203,6 +175,16 @@ public class GameManager : MonoBehaviour
     /// UI 오브젝트 관리 스크립트
     /// </summary>
     private UIObjManager m_uIObjManager = null;
+
+    /// <summary>
+    /// (지형)벽 중심
+    /// </summary>
+    private Transform m_wallCenterPos = null;
+
+    /// <summary>
+    /// (지형)벽 리스트
+    /// </summary>
+    private List<GameObject> m_wallList = new List<GameObject>();
     /// <summary>
     /// 반복 공격 데이터 리스트
     /// </summary>
@@ -285,6 +267,8 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        g_gameManager = this;
+
         AwakeSetting();
     }
     void Start()
@@ -303,28 +287,22 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void AwakeSetting()
     {
-        if (g_gameManager == null)
-        {
-            g_gameManager = this;
-        }
-        else
-        {
-            Destroy(this);
-        }
-
-        DontDestroyOnLoad(gameObject);
-
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
         m_soundManager = GetComponent<SoundManager>();
         m_uIObjManager = GameObject.Find("UIObj").GetComponent<UIObjManager>();
-
-        GetCSVData();
+        m_wallCenterPos = GameObject.Find("MapCenter").transform.Find("WallCenter").transform;
+        for(int i = 0; i < 3; i++)
+        {
+            m_wallList.Add(m_wallCenterPos.GetChild(i).gameObject);
+        }
     }
     /// <summary>
     /// start 초기 설정
     /// </summary>
     void StartSetting()
     {
+        GetCSVData();
+
         GameObject _simpleAtkParent = new GameObject("SimpleAtkParent");
         GameObject _rangeAtkParent = new GameObject("RangeAtkParent");
         GameObject _scaffoldParent = new GameObject("ScaffoldParent");
@@ -355,6 +333,8 @@ public class GameManager : MonoBehaviour
         _obj = Instantiate(m_popWarningObj);
         m_popWarningObj = _obj;
         m_popWarningObj.SetActive(false);
+
+        m_soundManager.PlayBackGroundSound(m_roundData.m_soundData.m_backGround);
     }
     
     /// <summary>
@@ -367,7 +347,7 @@ public class GameManager : MonoBehaviour
         m_atkDataList = new List<AtkData>();
         m_repeatAtkDataList = new List<RepeatAtkData>();
         //Phase data's name = "Phase + N"
-        List<Dictionary<string, object>> _data = CSVReader.Read("Phase" + m_phase);
+        List<Dictionary<string, object>> _data = CSVReader.Read(m_roundData.m_roundIndex + "/Phase" + m_phase);
 
         if(_data == null)
         {
@@ -551,7 +531,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if(m_phaseOverTime[m_phase] <= m_phaseTime)
+        if(m_roundData.m_phaseOverTime[m_phase] <= m_phaseTime)
         {
             PhaseOver();
         }
@@ -574,7 +554,7 @@ public class GameManager : MonoBehaviour
                 }
 
                 // 처음 실행 시
-                if (item.m_repeatStartTime + m_phaseStartTimeSet[m_phase] <= m_phaseTime && item.m_toRepeatTime == 0.0f)
+                if (item.m_repeatStartTime + m_roundData.m_phaseStartTimeSet[m_phase] <= m_phaseTime && item.m_toRepeatTime == 0.0f)
                 {
                     item.m_toRepeatTime = m_phaseTime + item.m_repeatTime;
                     GenObjAsAtkData(item.m_atkData);
@@ -599,7 +579,7 @@ public class GameManager : MonoBehaviour
             {
                 return;
             }
-            if (m_atkDataList[m_atkIndex].m_genTime + m_phaseStartTimeSet[m_phase] <= m_phaseTime)
+            if (m_atkDataList[m_atkIndex].m_genTime + m_roundData.m_phaseStartTimeSet[m_phase] <= m_phaseTime)
             {
                 GenObjAsAtkData(m_atkDataList[m_atkIndex]);
                 m_atkIndex++;
@@ -776,7 +756,7 @@ public class GameManager : MonoBehaviour
         _atk.transform.rotation = Quaternion.Euler(argRotation);
         _atk.transform.localScale = argSize;
 
-        m_soundManager.PlayEffectSound(m_soundManager.GetSound.m_rangeAtk);
+        m_soundManager.PlayEffectSound(m_roundData.m_soundData.m_rangeAtk);
     }
     /// <summary>
     /// 발판 생성
@@ -835,7 +815,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        m_soundManager.PlayEffectSound(m_soundManager.GetSound.m_popAtk);
+        m_soundManager.PlayEffectSound(m_roundData.m_soundData.m_popAtk);
     }
     /// <summary>
     /// 전체 단순 공격 코루틴
@@ -857,7 +837,7 @@ public class GameManager : MonoBehaviour
     /// <param name="argDirZ">공격 방향</param>
     void GravityAtk(float argDirZ)
     {
-        m_soundManager.PlayEffectSound(m_soundManager.GetSound.m_gravityAtk);
+        m_soundManager.PlayEffectSound(m_roundData.m_soundData.m_gravityAtk);
 
         StartCoroutine(IEChangeWall(argDirZ));
         StartCoroutine(IEGravityAtk());
@@ -946,7 +926,7 @@ public class GameManager : MonoBehaviour
                 {
                     m_playerController.GetCanMoveFlage = true;
 
-                    m_soundManager.PlayEffectSound(m_soundManager.GetSound.m_hitGround);
+                    m_soundManager.PlayEffectSound(m_roundData.m_soundData.m_hitGround);
 
                     yield break;
                 }
@@ -1086,6 +1066,11 @@ public class GameManager : MonoBehaviour
     public UIObjManager GetUIObjManager
     {
         get { return m_uIObjManager; }
+    }
+    public RoundData GetRoundData
+    {
+        get { return m_roundData; }
+        set { m_roundData = value; }
     }
     public Material GetAtkObjMat
     {
