@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//각 라운드를 관리하는 데이터입니다
+//페이즈가 시작되는 시간과 끝나는 시간은 페이즈의 갯수에 맞춰서 같은 수로 설정하여야합니다
 [CreateAssetMenu(fileName = "Round Data Asset", menuName = "New RoundData")]
 public class RoundData : ScriptableObject
 {

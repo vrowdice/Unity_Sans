@@ -21,13 +21,6 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     Text m_hpText = null;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Confined;
-    }
-
     /// <summary>
     /// 슬라이더 초기 셋팅
     /// </summary>

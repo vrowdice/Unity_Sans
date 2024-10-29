@@ -6,6 +6,11 @@ using TMPro;
 public class UIObjManager : MonoBehaviour
 {
     /// <summary>
+    /// 회복 버튼
+    /// </summary>
+    GameObject m_recoverBtn = null;
+
+    /// <summary>
     /// 게임 종료 텍스트 오브젝트
     /// </summary>
     GameObject m_gameOverTextObj = null;
@@ -18,11 +23,12 @@ public class UIObjManager : MonoBehaviour
     /// </summary>
     TextMeshPro m_recoverCountTextMeshPro = null;
 
-    private void Awake()
+    private void OnEnable()
     {
         m_gameOverTextObj = transform.Find("GameOverTextObj").gameObject;
         m_youWinTextObj = transform.Find("YouWinTextObj").gameObject;
-        m_recoverCountTextMeshPro = transform.Find("RecoverBtn").Find("CountTextObj").GetComponent<TextMeshPro>();
+        m_recoverBtn = transform.Find("RecoverBtn").gameObject;
+        m_recoverCountTextMeshPro = m_recoverBtn.transform.Find("CountTextObj").GetComponent<TextMeshPro>();
     }
 
     /// <summary>
@@ -30,15 +36,16 @@ public class UIObjManager : MonoBehaviour
     /// </summary>
     public void GameWinState(bool argIsWin)
     {
+        gameObject.SetActive(true);
+        m_recoverBtn.SetActive(false);
+
         if (argIsWin)
         {
-            gameObject.SetActive(true);
             m_gameOverTextObj.SetActive(false);
             m_youWinTextObj.SetActive(true);
         }
         else
         {
-            gameObject.SetActive(true);
             m_gameOverTextObj.SetActive(true);
             m_youWinTextObj.SetActive(false);
         }
@@ -48,7 +55,16 @@ public class UIObjManager : MonoBehaviour
     /// </summary>
     public void ActiveUIObj(bool argState)
     {
+        if (GameManager.Instance.GetPhase != 0)
+        {
+            m_recoverBtn.SetActive(true);
+        }
+        else
+        {
+            m_recoverBtn.SetActive(false);
+        }
         gameObject.SetActive(argState);
+
         m_gameOverTextObj.SetActive(false);
         m_youWinTextObj.SetActive(false);
     }

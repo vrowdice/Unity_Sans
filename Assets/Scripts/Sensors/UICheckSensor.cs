@@ -20,7 +20,7 @@ public class UICheckSensor : MonoBehaviour
         if (other.gameObject.tag == "InteractBtn")
         {
             other.gameObject.GetComponent<MeshRenderer>().material = m_playerController.GetActiveInteractMat;
-            m_playerController.GetInteractBtnObj = other.gameObject;
+            m_playerController.SetInteractBtnObj = other.gameObject;
         }
     }
     private void OnTriggerExit(Collider other)
@@ -28,7 +28,7 @@ public class UICheckSensor : MonoBehaviour
         if (other.gameObject.tag == "InteractBtn")
         {
             other.gameObject.GetComponent<MeshRenderer>().material = m_playerController.GetStandardInteractMat;
-            m_playerController.GetInteractBtnObj = null;
+            m_playerController.SetInteractBtnObj = null;
         }
     }
 }

@@ -61,10 +61,6 @@ public class TitleManager : MonoBehaviour
     /// </summary>
     private Transform m_roundSelectBtnParentTransform = null;
     /// <summary>
-    /// 클릭한 오브젝트와 땐 오브젝트 동일 여부 판단
-    /// </summary>
-    private GameObject m_compareClickBtn = null;
-    /// <summary>
     /// 현재 속도
     /// </summary>
     private Vector3 m_scrollVelocity = Vector3.zero;
@@ -87,8 +83,6 @@ public class TitleManager : MonoBehaviour
         {
             m_focusedBtn = other.GetComponent<RoundSelectBtn>();
             m_roundText.text = GameDataManager.Instance.GetRoundData(m_focusedBtn.GetRoundIndex).m_roundName;
-            m_audioSource.clip = GameDataManager.Instance.GetRoundData(m_focusedBtn.GetRoundIndex).m_soundData.m_backGround;
-            m_audioSource.Play();
         }
     }
 
@@ -105,7 +99,14 @@ public class TitleManager : MonoBehaviour
         ScrollMenu();
         ScrollMenuWithDrag();
         FocusedBtnManage();
-        StartRound();
+    }
+
+    /// <summary>
+    /// 라운드 시작
+    /// </summary>
+    public void StartRound()
+    {
+        GameDataManager.Instance.GoMainScene(m_focusedBtn.GetRoundIndex);
     }
 
     /// <summary>
@@ -117,7 +118,7 @@ public class TitleManager : MonoBehaviour
         m_minScrollPos = -(_roundDataListCount - 1) * (m_roundSelectBtnXSize + m_roundSelectBtnDistance);
 
         m_roundSelectBtnParentTransform = new GameObject("RoundSelectBtnParent").transform;
-        m_roundSelectBtnParentTransform.position = new Vector3(0.0f, 2.5f, -3.0f);
+        m_roundSelectBtnParentTransform.position = new Vector3(0.0f, 3.0f, -2.5f);
 
         for(int i = 0; i < _roundDataListCount; i++)
         {
@@ -199,38 +200,10 @@ public class TitleManager : MonoBehaviour
     {
         if (m_focusedBtn != null)
         {
-            Vector3 targetPosition = new Vector3(-m_focusedBtn.transform.localPosition.x, 2.5f, -3.0f);
             m_roundSelectBtnParentTransform.position = Vector3.MoveTowards(
                 m_roundSelectBtnParentTransform.position,
-                targetPosition,
+                new Vector3(-m_focusedBtn.transform.localPosition.x, m_roundSelectBtnParentTransform.position.y, m_roundSelectBtnParentTransform.position.z),
                 10.0f * Time.deltaTime);
-        }
-    }
-    /// <summary>
-    /// 라운드 시작
-    /// </summary>
-    void StartRound()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                m_compareClickBtn = hit.transform.gameObject;
-            }
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                if(m_compareClickBtn == hit.transform.gameObject && m_focusedBtn == m_compareClickBtn)
-                {
-
-                }
-            }
         }
     }
 

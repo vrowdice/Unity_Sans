@@ -168,10 +168,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private PlayerController m_playerController = null;
     /// <summary>
-    /// 사운드 매니저 스크립트
-    /// </summary>
-    private SoundManager m_soundManager = null;
-    /// <summary>
     /// UI 오브젝트 관리 스크립트
     /// </summary>
     private UIObjManager m_uIObjManager = null;
@@ -180,7 +176,6 @@ public class GameManager : MonoBehaviour
     /// (지형)벽 중심
     /// </summary>
     private Transform m_wallCenterPos = null;
-
     /// <summary>
     /// (지형)벽 리스트
     /// </summary>
@@ -253,6 +248,10 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private float m_phaseStartTime = 0.0f;
     /// <summary>
+    /// 첫번째 시작인지
+    /// </summary>
+    private bool m_isFirstStart = true;
+    /// <summary>
     /// 타이밍 측정중인가
     /// </summary>
     private bool m_isTiming = false;
@@ -265,16 +264,14 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private bool m_ascensionCompleteFlag = false;
 
-    private void Awake()
+    private void OnEnable()
     {
         g_gameManager = this;
-
-        AwakeSetting();
+        OnEnableSetting();
     }
     void Start()
     {
         StartSetting();
-        PhaseStart();
     }
     private void FixedUpdate()
     {
@@ -283,31 +280,38 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// awake 초기 설정
+    /// 초기 설정
     /// </summary>
-    void AwakeSetting()
+    private void OnEnableSetting()
     {
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
-        m_soundManager = GetComponent<SoundManager>();
         m_uIObjManager = GameObject.Find("UIObj").GetComponent<UIObjManager>();
         m_wallCenterPos = GameObject.Find("MapCenter").transform.Find("WallCenter").transform;
+
         for(int i = 0; i < 3; i++)
         {
             m_wallList.Add(m_wallCenterPos.GetChild(i).gameObject);
+        }
+
+        if(GameDataManager.Instance != null)
+        {
+            m_roundData = GameDataManager.Instance.GetRoundData(GameDataManager.Instance.SetRoundIndex);
         }
     }
     /// <summary>
     /// start 초기 설정
     /// </summary>
-    void StartSetting()
+    private void StartSetting()
     {
         GetCSVData();
 
+        //스텍 오브젝트 빈 오브젝트 생성 및 지정
         GameObject _simpleAtkParent = new GameObject("SimpleAtkParent");
         GameObject _rangeAtkParent = new GameObject("RangeAtkParent");
         GameObject _scaffoldParent = new GameObject("ScaffoldParent");
 
         GameObject _obj = null;
+        //각 빈 오브젝트에 스텍 오브젝트 할당
         for (int i = 0; i < m_simpleAtkObjCount; i++)
         {
             _obj = Instantiate(m_simpleAtkObj, _simpleAtkParent.transform);
@@ -328,34 +332,38 @@ public class GameManager : MonoBehaviour
             m_scaffoldObjWaitQueue.Enqueue(_obj.GetComponent<Scaffold>());
         }
 
+        //벽 초기 상태로 변경
         StartCoroutine(IEChangeWall(0.0f));
 
+        //튀어오름 공격 경고 생성 및 초기 상태 설정
         _obj = Instantiate(m_popWarningObj);
         m_popWarningObj = _obj;
         m_popWarningObj.SetActive(false);
-
-        m_soundManager.PlayBackGroundSound(m_roundData.m_soundData.m_backGround);
     }
-    
+
     /// <summary>
-    /// CSV 데이터 가져와서 리스트에 저장
+    /// CSV 데이터 가져와서 리스트에 저장하고 로딩 화면 표시
     /// </summary>
     void GetCSVData()
     {
+        // 데이터 초기화
         int _tmpRepeatAtkIndex = -1;
         int _tmpRepeatAtkOrder = 0;
         m_atkDataList = new List<AtkData>();
         m_repeatAtkDataList = new List<RepeatAtkData>();
-        //Phase data's name = "Phase + N"
+
+        // Phase data name = "Phase + N"
         List<Dictionary<string, object>> _data = CSVReader.Read(m_roundData.m_roundIndex + "/Phase" + m_phase);
 
-        if(_data == null)
+        // 데이터가 null이거나 비어있을 경우 처리
+        if (_data == null || _data.Count == 0)
         {
-            //데이터가 존재하지 않으면 승리
+            // 데이터가 없으면 승리 처리 및 종료
             GameOver(true);
             return;
         }
 
+        // 데이터가 존재할 경우 리스트에 추가
         for (int i = 0; i < _data.Count; i++)
         {
             if (_data[i]["order"].ToString() == "")
@@ -363,50 +371,56 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
-            //데이터 생성
-            AtkData _atkData = new AtkData();
+            // 데이터 생성
+            AtkData _atkData = new AtkData
+            {
+                m_order = int.Parse(_data[i]["order"].ToString()),
+                m_type = StrToAtkType(int.Parse(_data[i]["type"].ToString())),
+                m_isMove = StrToBool(_data[i]["isMove"].ToString()),
+                m_genTime = float.Parse(_data[i]["genTime"].ToString()),
+                m_speed = float.Parse(_data[i]["speed"].ToString()),
+                m_size = new Vector3(
+                    float.Parse(_data[i]["sizeX"].ToString()),
+                    float.Parse(_data[i]["sizeY"].ToString()),
+                    float.Parse(_data[i]["sizeZ"].ToString())
+                ),
+                m_position = new Vector3(
+                    float.Parse(_data[i]["positionX"].ToString()),
+                    float.Parse(_data[i]["positionY"].ToString()),
+                    float.Parse(_data[i]["positionZ"].ToString())
+                ),
+                m_rotation = new Vector3(
+                    float.Parse(_data[i]["rotationX"].ToString()),
+                    float.Parse(_data[i]["rotationY"].ToString()),
+                    float.Parse(_data[i]["rotationZ"].ToString())
+                )
+            };
 
-            _atkData.m_order = int.Parse(_data[i]["order"].ToString());
-            _atkData.m_type = StrToAtkType(int.Parse(_data[i]["type"].ToString()));
-            _atkData.m_isMove = StrToBool(_data[i]["isMove"].ToString());
-            _atkData.m_genTime = float.Parse(_data[i]["genTime"].ToString());
-            _atkData.m_speed = float.Parse(_data[i]["speed"].ToString());
-
-            _atkData.m_size.x = float.Parse(_data[i]["sizeX"].ToString());
-            _atkData.m_size.y = float.Parse(_data[i]["sizeY"].ToString());
-            _atkData.m_size.z = float.Parse(_data[i]["sizeZ"].ToString());
-
-            _atkData.m_position.x = float.Parse(_data[i]["positionX"].ToString());
-            _atkData.m_position.y = float.Parse(_data[i]["positionY"].ToString());
-            _atkData.m_position.z = float.Parse(_data[i]["positionZ"].ToString());
-
-            _atkData.m_rotation.x = float.Parse(_data[i]["rotationX"].ToString());
-            _atkData.m_rotation.y = float.Parse(_data[i]["rotationY"].ToString());
-            _atkData.m_rotation.z = float.Parse(_data[i]["rotationZ"].ToString());
-
-            //order가 음수인 경우 RepeatAtkData 생성
+            // order가 음수인 경우 RepeatAtkData 생성
             if (_atkData.m_order < 0)
             {
-                if(_tmpRepeatAtkOrder != _atkData.m_order)
+                if (_tmpRepeatAtkOrder != _atkData.m_order)
                 {
                     _tmpRepeatAtkOrder = _atkData.m_order;
 
-                    RepeatAtkData _repeatAtkData = new RepeatAtkData();
-                    _repeatAtkData.m_atkData = _atkData;
-                    _repeatAtkData.m_repeatStartTime = _atkData.m_genTime;
-                    _repeatAtkData.m_repeatTime = 0.0f;
-                    _repeatAtkData.m_repeatOverTime = 0.0f;
+                    RepeatAtkData _repeatAtkData = new RepeatAtkData
+                    {
+                        m_atkData = _atkData,
+                        m_repeatStartTime = _atkData.m_genTime,
+                        m_repeatTime = 0.0f,
+                        m_repeatOverTime = 0.0f
+                    };
 
                     m_repeatAtkDataList.Add(_repeatAtkData);
                     _tmpRepeatAtkIndex++;
                 }
                 else
                 {
-                    if(m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatTime == 0.0f)
+                    if (m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatTime == 0.0f)
                     {
                         m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatTime = _atkData.m_genTime - m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatStartTime;
                     }
-                    else if(m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatOverTime == 0.0f)
+                    else if (m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatOverTime == 0.0f)
                     {
                         m_repeatAtkDataList[_tmpRepeatAtkIndex].m_repeatOverTime = _atkData.m_genTime;
                     }
@@ -417,13 +431,22 @@ public class GameManager : MonoBehaviour
                 m_atkDataList.Add(_atkData);
             }
         }
+
+        // 데이터가 정상적으로 로드된 경우에만 PhaseReady 호출
+        if (m_isFirstStart == true)
+        {
+            m_uIObjManager.ActiveUIObj(true);
+            m_isFirstStart = false;
+        }
     }
+
+
     /// <summary>
     /// 공격 타입 문자열 이넘으로 변경
     /// </summary>
     /// <param name="argStr">공격 타입 문자열</param>
     /// <returns>공격 타입 이넘</returns>
-    AtkType StrToAtkType(int argIndex)
+    private AtkType StrToAtkType(int argIndex)
     {
         switch (argIndex)
         {
@@ -449,7 +472,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="argStr">0이나 1</param>
     /// <returns>boolen</returns>
-    bool StrToBool(string argStr)
+    private bool StrToBool(string argStr)
     {
         if(argStr == "0")
         {
@@ -471,6 +494,10 @@ public class GameManager : MonoBehaviour
     {
         if(m_atkDataList != null && !m_isTiming)
         {
+            if (GetPhase == 0)
+            {
+                GameDataManager.Instance.GetSoundManager.PlayBackgroundSound(m_roundData.m_soundData.m_backGround);
+            }
             m_uIObjManager.ActiveUIObj(false);
             StartTimer();
         }
@@ -481,7 +508,7 @@ public class GameManager : MonoBehaviour
     public void PhaseOver()
     {
         m_uIObjManager.ActiveUIObj(true);
-        m_uIObjManager.SetRecoverCountTextObj(m_playerController.GetRecoverCount);
+        m_uIObjManager.SetRecoverCountTextObj(m_playerController.SetRecoverCount);
 
         m_phase++;
         m_phaseTime = 0.0f;
@@ -756,7 +783,7 @@ public class GameManager : MonoBehaviour
         _atk.transform.rotation = Quaternion.Euler(argRotation);
         _atk.transform.localScale = argSize;
 
-        m_soundManager.PlayEffectSound(m_roundData.m_soundData.m_rangeAtk);
+        GameDataManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_rangeAtk);
     }
     /// <summary>
     /// 발판 생성
@@ -815,7 +842,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        m_soundManager.PlayEffectSound(m_roundData.m_soundData.m_popAtk);
+        GameDataManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_popAtk);
     }
     /// <summary>
     /// 전체 단순 공격 코루틴
@@ -837,7 +864,7 @@ public class GameManager : MonoBehaviour
     /// <param name="argDirZ">공격 방향</param>
     void GravityAtk(float argDirZ)
     {
-        m_soundManager.PlayEffectSound(m_roundData.m_soundData.m_gravityAtk);
+        GameDataManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_gravityAtk);
 
         StartCoroutine(IEChangeWall(argDirZ));
         StartCoroutine(IEGravityAtk());
@@ -903,7 +930,7 @@ public class GameManager : MonoBehaviour
             if (m_ascensionCompleteFlag && m_playerController.transform.position.y <
                 m_wallCenterPos.position.y - 1.0f)
             {
-                m_playerController.GetCanMoveFlage = false;
+                m_playerController.SetCanMoveFlage = false;
                 m_playerController.transform.position = Vector3.MoveTowards(
                     m_playerController.transform.position,
                     new Vector3(m_playerController.transform.position.x,
@@ -924,9 +951,9 @@ public class GameManager : MonoBehaviour
                     m_gravityAtkSpeed * 4 * Time.deltaTime);
                 if (m_playerController.transform.position.y <= 0.0f)
                 {
-                    m_playerController.GetCanMoveFlage = true;
+                    m_playerController.SetCanMoveFlage = true;
 
-                    m_soundManager.PlayEffectSound(m_roundData.m_soundData.m_hitGround);
+                    GameDataManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_hitGround);
 
                     yield break;
                 }
@@ -1059,18 +1086,13 @@ public class GameManager : MonoBehaviour
             return g_gameManager;
         }
     }
-    public SoundManager GetSoundManager
-    {
-        get { return m_soundManager; }
-    }
     public UIObjManager GetUIObjManager
     {
         get { return m_uIObjManager; }
     }
-    public RoundData GetRoundData
+    public PlayerController GetPlayerController
     {
-        get { return m_roundData; }
-        set { m_roundData = value; }
+        get { return m_playerController; }
     }
     public Material GetAtkObjMat
     {
@@ -1084,6 +1106,10 @@ public class GameManager : MonoBehaviour
     {
         get { return m_warningMat; }
     }
+    public int GetPhase
+    {
+        get { return m_phase; }
+    }
     public bool GetIsTiming
     {
         get { return m_isTiming; }
@@ -1091,5 +1117,11 @@ public class GameManager : MonoBehaviour
     public bool GetIsGameOver
     {
         get { return m_isGameOver; }
+    }
+
+    public RoundData SetRoundData
+    {
+        get { return m_roundData; }
+        set { m_roundData = value; }
     }
 }

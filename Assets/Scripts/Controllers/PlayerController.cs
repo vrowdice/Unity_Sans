@@ -135,7 +135,11 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// 움직임 가능한 경우 true
     /// </summary>
-    private bool m_canMoveFlage = true;
+    private bool m_canMoveFlag = true;
+    /// <summary>
+    /// 조작이 가능한 경우
+    /// </summary>
+    private bool m_playerControllFlag = true;
     /// <summary>
     /// 데미지를 입을 수 있는 상황인 경우 true
     /// </summary>
@@ -183,18 +187,22 @@ public class PlayerController : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if (m_canMoveFlage)
+        if(m_playerControllFlag == true)
         {
-            MoveControll();
-            JumpControll();
-        }
+            if (m_canMoveFlag == true)
+            {
+                MoveControll();
+                JumpControll();
+            }
 
-        ConstantGravity();
-        CameraControll();
+            ConstantGravity();
+            CameraControll();
+        }
     }
     private void Update()
     {
-        MouseBtnDownInputControll();
+        MouseBtnInputControll();
+        KeyboardInputControll();
     }
 
     /// <summary>
@@ -209,6 +217,8 @@ public class PlayerController : MonoBehaviour
         m_uiManager.SetSliders(m_maxHp);
 
         StartCoroutine(IESyncHealth());
+
+        GameDataManager.Instance.CursorState(false);
     }
 
     /// <summary>
@@ -241,10 +251,10 @@ public class PlayerController : MonoBehaviour
         if (m_canDamageFlage)
         {
             m_canDamageFlage = false;
-            GetLateHp += argManageHp;
+            SetLateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
 
-            GameManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.GetRoundData.m_soundData.m_hit);
+            GameDataManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.SetRoundData.m_soundData.m_hit);
         }
     }
 
@@ -259,11 +269,11 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        GetRecoverCount--;
-        GetHp += argManageHp;
-        GetLateHp += argManageHp;
+        SetRecoverCount--;
+        SetHp += argManageHp;
+        SetLateHp += argManageHp;
 
-        GameManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.GetRoundData.m_soundData.m_heal);
+        GameDataManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.SetRoundData.m_soundData.m_heal);
     }
 
     /// <summary>
@@ -274,12 +284,12 @@ public class PlayerController : MonoBehaviour
     {
         while (true)
         {
-            float _healthDifference = Mathf.Abs(GetHp - GetLateHp);
+            float _healthDifference = Mathf.Abs(SetHp - SetLateHp);
             if (_healthDifference > 0.1f)
             {
-                if (GetHp > GetLateHp)
+                if (SetHp > SetLateHp)
                 {
-                    GetHp -= 1;
+                    SetHp -= 1;
                 }
             }
 
@@ -376,13 +386,13 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// 마우스 버튼 클릭 설정
     /// </summary>
-    void MouseBtnDownInputControll()
+    void MouseBtnInputControll()
     {
         if (Input.GetMouseButtonDown(0))
         {
             if(m_InteractBtnObj != null)
             {
-                if (m_InteractBtnObj.name == "NextBtn")
+                if (m_InteractBtnObj.name == "StartBtn")
                 {
                     if (GameManager.Instance.GetIsGameOver)
                     {
@@ -403,6 +413,27 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+    void KeyboardInputControll()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            GameDataManager.Instance.GetOptionManager.OptionState(true);
+        }
+
+        if (Input.GetKey(KeyCode.LeftAlt))
+        {
+            m_playerControllFlag = false;
+            GameDataManager.Instance.CursorState(true);
+        }
+        else
+        {
+            if(GameDataManager.Instance.GetOptionManager.GetOptionState == false)
+            {
+                m_playerControllFlag = true;
+                GameDataManager.Instance.CursorState(false);
+            }
+        }
+    }
 
     /// <summary>
     /// 플레이어 상태 초기화
@@ -410,21 +441,11 @@ public class PlayerController : MonoBehaviour
     public void ResetPlayerState()
     {
         transform.position = new Vector3(0.0f, 4.0f, 0.0f);
-        GetHp = m_maxHp;
-        GetLateHp = m_maxHp;
-        GetRecoverCount = m_maxRecoverCount;
+        SetHp = m_maxHp;
+        SetLateHp = m_maxHp;
+        SetRecoverCount = m_maxRecoverCount;
     }
 
-    public GameObject GetInteractBtnObj
-    {
-        get { return m_InteractBtnObj; }
-        set { m_InteractBtnObj = value; }
-    }
-    public Scaffold GetGroundScaffold
-    {
-        get { return m_groundScaffold; }
-        set { m_groundScaffold = value; }
-    }
     public Material GetStandardInteractMat
     {
         get { return m_standardInteractMat; }
@@ -433,27 +454,42 @@ public class PlayerController : MonoBehaviour
     {
         get { return m_activeInteractMat; }
     }
-    public bool GetIsCanDamageFlage
+    public GameObject SetInteractBtnObj
+    {
+        get { return m_InteractBtnObj; }
+        set { m_InteractBtnObj = value; }
+    }
+    public Scaffold SetGroundScaffold
+    {
+        get { return m_groundScaffold; }
+        set { m_groundScaffold = value; }
+    }
+    public bool SetIsCanDamageFlage
     {
         get { return m_canDamageFlage; }
         set { m_canDamageFlage = value; }
     }
-    public bool GetIsCanJumpFlag
+    public bool SetIsCanJumpFlag
     {
         get { return m_canJumpFlag; }
         set { m_canJumpFlag = value; }
     }
-    public bool GetIsGroundFlag
+    public bool SetIsGroundFlag
     {
         get { return m_groundFlag; }
         set { m_groundFlag = value; }
     }
-    public bool GetCanMoveFlage
+    public bool SetCanMoveFlage
     {
-        get { return m_canMoveFlage; }
-        set { m_canMoveFlage = value; }
+        get { return m_canMoveFlag; }
+        set { m_canMoveFlag = value; }
     }
-    public int GetRecoverCount
+    public bool SetPlayerControllFlag
+    {
+        get { return m_playerControllFlag; }
+        set { m_playerControllFlag = value; }
+    }
+    public int SetRecoverCount
     {
         get { return m_recoverCount; }
         set
@@ -472,7 +508,7 @@ public class PlayerController : MonoBehaviour
             GameManager.Instance.GetUIObjManager.SetRecoverCountTextObj(m_recoverCount);
         }
     }
-    public float GetHp
+    public float SetHp
     {
         get 
         { 
@@ -492,7 +528,7 @@ public class PlayerController : MonoBehaviour
             m_uiManager.HpSlider(m_hp);
         }
     }
-    public float GetLateHp
+    public float SetLateHp
     {
         get
         {
@@ -505,7 +541,7 @@ public class PlayerController : MonoBehaviour
             if (m_lateHp <= 1)
             {
                 m_lateHp = 1;
-                GetHp -= 1;
+                SetHp -= 1;
             }
             else if (m_lateHp >= m_maxHp)
             {

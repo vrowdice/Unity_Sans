@@ -18,15 +18,15 @@ public class JumpStateSensor : MonoBehaviour
     {
         if (other.gameObject.tag == "Terrain")
         {
-            m_playerController.GetIsCanJumpFlag = true;
-            m_playerController.GetIsGroundFlag = true;
-            m_playerController.GetGroundScaffold = null;
+            m_playerController.SetIsCanJumpFlag = true;
+            m_playerController.SetIsGroundFlag = true;
+            m_playerController.SetGroundScaffold = null;
         }
         else if (other.gameObject.tag == "Scaffold")
         {
-            m_playerController.GetIsCanJumpFlag = true;
-            m_playerController.GetIsGroundFlag = true;
-            m_playerController.GetGroundScaffold = other.GetComponent<Scaffold>();
+            m_playerController.SetIsCanJumpFlag = true;
+            m_playerController.SetIsGroundFlag = true;
+            m_playerController.SetGroundScaffold = other.GetComponent<Scaffold>();
         }
     }
 
@@ -34,8 +34,8 @@ public class JumpStateSensor : MonoBehaviour
     {
         if (other.gameObject.tag == "Terrain" || other.gameObject.tag == "Scaffold")
         {
-            m_playerController.GetIsGroundFlag = false;
-            m_playerController.GetGroundScaffold = null;
+            m_playerController.SetIsGroundFlag = false;
+            m_playerController.SetGroundScaffold = null;
         }
     }
 }
