@@ -24,12 +24,22 @@ public class GameDataManager : MonoBehaviour
     /// 라운드 데이터 저장
     /// </summary>
     [SerializeField]
+    List<CharactorData> m_charactorDataList = new List<CharactorData>();
+    /// <summary>
+    /// 라운드 데이터 저장
+    /// </summary>
+    [SerializeField]
     List<RoundData> m_roundDataList = new List<RoundData>();
     /// <summary>
     /// 옵션 매니저 프리펩
     /// </summary>
     [SerializeField]
     GameObject m_optionManagerPrefeb = null;
+    /// <summary>
+    /// 돈 확인 패널 프리펩
+    /// </summary>
+    [SerializeField]
+    GameObject m_moneyPanelPrefeb = null;
     /// <summary>
     /// 경고 오브젝트 프리펩
     /// </summary>
@@ -45,13 +55,17 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     private OptionManager m_optionManager = null;
     /// <summary>
+    /// 돈 표시 패널 관리
+    /// </summary>
+    private MoneyPanel m_moneyPanel = null;
+    /// <summary>
     /// 현재 라운드 인덱스
     /// </summary>
     private int m_roundIndex = 0;
     /// <summary>
     /// 돈
     /// </summary>
-    private long m_money = 0;
+    private long m_money = 10000;
     /// <summary>
     /// 현재 씬 캔버스의 트렌스폼
     /// </summary>
@@ -64,6 +78,7 @@ public class GameDataManager : MonoBehaviour
 
     private void OnEnableSetting()
     {
+        //싱글톤 세팅
         if (g_gameDataManager == null)
         {
             g_gameDataManager = this;
@@ -74,9 +89,14 @@ public class GameDataManager : MonoBehaviour
             Destroy(gameObject);
         }
         DontDestroyOnLoad(gameObject);
+
+        //씬 로드하는 경우
         SceneManager.sceneLoaded += SceneLoaded;
 
+        //사운드 매니저 할당
         m_soundManager = GetComponent<SoundManager>();
+
+        //커서 상태 변경
         CursorState(true);
     }
 
@@ -91,18 +111,40 @@ public class GameDataManager : MonoBehaviour
         m_canvasTrans = GameObject.Find("Canvas").transform;
         if(m_canvasTrans != null)
         {
+            //옵션 매니저 생성 및 할당
             m_optionManager = Instantiate(m_optionManagerPrefeb, m_canvasTrans).GetComponent<OptionManager>();
             m_optionManager.OptionState(false);
+
+            m_moneyPanel = Instantiate(m_moneyPanelPrefeb, m_canvasTrans).GetComponent<MoneyPanel>();
         }
+
+        SetMoney = m_money;
     }
 
     /// <summary>
-    /// 라운드 데이터 가져가기
+    /// 캐릭터 데이터 가져오기
+    /// </summary>
+    /// <param name="argIndex">캐릭터 인덱스</param>
+    /// <returns>캐릭터 데이터</returns>
+    public CharactorData GetCharactorData(int argIndex)
+    {
+        if(argIndex < 0 || m_charactorDataList.Count < argIndex)
+        {
+            return null;
+        }
+        return m_charactorDataList[argIndex];
+    }
+    /// <summary>
+    /// 라운드 데이터 가져오기
     /// </summary>
     /// <param name="argIndex">라운드 인덱스</param>
     /// <returns>라운드 데이터</returns>
     public RoundData GetRoundData(int argIndex)
     {
+        if (argIndex < 0 || m_roundDataList.Count < argIndex)
+        {
+            return null;
+        }
         return m_roundDataList[argIndex];
     }
 
@@ -201,6 +243,8 @@ public class GameDataManager : MonoBehaviour
             {
                 m_money = 0;
             }
+
+            m_moneyPanel.SetMoneyText = value.ToString();
         }
     }
 

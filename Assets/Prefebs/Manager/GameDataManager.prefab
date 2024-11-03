@@ -43,7 +43,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.7
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -170,7 +170,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -300,11 +300,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b643d768080f25042be120ed86ae90a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_charactorDataList:
+  - {fileID: 11400000, guid: df3a454649a7e5f43bfa16635600abf7, type: 2}
   m_roundDataList:
   - {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
   - {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
   - {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
   m_optionManagerPrefeb: {fileID: 494688313676920901, guid: eec4d1829c5ab76488d40724a1f30684, type: 3}
+  m_moneyPanelPrefeb: {fileID: 8334207696057552510, guid: 3540721e25141a44485180a9a607be69, type: 3}
   m_alertObjPrefeb: {fileID: 6054084243233978953, guid: 716d3a4693eae8b44aec556b1815c8af, type: 3}
 --- !u!114 &8446468449005135232
 MonoBehaviour:

@@ -40,6 +40,8 @@ public class GameManager : MonoBehaviour
     RoundData m_roundData = null;
     /// <summary>
     /// 현재 페이즈
+    /// 진행중이 페이즈를 표시하는 것이 아닌
+    /// 앞으로 불러올 데이터의 페이즈를 표시함
     /// </summary>
     [SerializeField]
     int m_phase = 0;
@@ -266,7 +268,6 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        g_gameManager = this;
         OnEnableSetting();
     }
     void Start()
@@ -284,15 +285,21 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void OnEnableSetting()
     {
+        //전역 할당
+        g_gameManager = this;
+
+        //찾은 후 할당
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
         m_uIObjManager = GameObject.Find("UIObj").GetComponent<UIObjManager>();
         m_wallCenterPos = GameObject.Find("MapCenter").transform.Find("WallCenter").transform;
 
+        //벽 리스트의 벽 할당
         for(int i = 0; i < 3; i++)
         {
             m_wallList.Add(m_wallCenterPos.GetChild(i).gameObject);
         }
 
+        //전역 인스턴스 할당
         if(GameDataManager.Instance != null)
         {
             m_roundData = GameDataManager.Instance.GetRoundData(GameDataManager.Instance.SetRoundIndex);
@@ -507,6 +514,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void PhaseOver()
     {
+        ResetAllObj();
+
         m_uIObjManager.ActiveUIObj(true);
         m_uIObjManager.SetRecoverCountTextObj(m_playerController.SetRecoverCount);
 
@@ -523,10 +532,18 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void GameOver(bool argWinOrDefeat)
     {
+        //게임 종료 플래그 변환
         m_isGameOver = true;
+
+        //돈 지급
+        if (argWinOrDefeat == true)
+        {
+            GameDataManager.Instance.SetMoney += (m_phase - 1) * 10;
+        }
 
         ResetAllObj();
 
+        //게임 종료 UI 표시
         m_uIObjManager.GameWinState(argWinOrDefeat);
 
         m_phase = 0;
@@ -685,7 +702,6 @@ public class GameManager : MonoBehaviour
                     m_toWaitScaffoldTmpList.Add(item);
                 }
             }
-
         }
 
         foreach (SimpleAtk item in m_toWaitSimpleAtkTmpList)
@@ -1077,14 +1093,13 @@ public class GameManager : MonoBehaviour
         AllRangeAtkObjReset();
         AllScaffoldObjReset();
         AllSimpleAtkObjReset();
+
+        m_wallCenterPos.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
     }
     
     public static GameManager Instance
     {
-        get
-        {
-            return g_gameManager;
-        }
+        get { return g_gameManager; }
     }
     public UIObjManager GetUIObjManager
     {

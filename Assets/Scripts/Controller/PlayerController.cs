@@ -14,6 +14,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     Material m_activeInteractMat = null;
     /// <summary>
+    /// 캐릭터 인덱스 강제 설정
+    /// </summary>
+    [SerializeField]
+    int m_charactorIndex = 0;
+    /// <summary>
     /// 최대 회복 횟수
     /// </summary>
     [SerializeField]
@@ -99,6 +104,10 @@ public class PlayerController : MonoBehaviour
     /// 리지드바디
     /// </summary>
     private Rigidbody m_rigidbody = null;
+    /// <summary>
+    /// 플래이어 스킨 위치 설정
+    /// </summary>
+    private Vector3 m_viewPlayerGenPos = new Vector3(0.0f, 1.0f, 0.0f);
     /// <summary>
     /// 현재 회복 가능한 횟수
     /// </summary>
@@ -210,14 +219,23 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void StartSetting()
     {
+        //변수 할당
         m_uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         m_rigidbody = GetComponent<Rigidbody>();
 
+        //플래이어 위치 초기화
         ResetPlayerState();
+
+        //슬라이더 초기 설정
         m_uiManager.SetSliders(m_maxHp);
 
+        //체력 싱크 활성화
         StartCoroutine(IESyncHealth());
 
+        //플래이어 스킨 생성
+        GenViewPlayer();
+
+        //커서 상태 비활성화
         GameDataManager.Instance.CursorState(false);
     }
 
@@ -433,6 +451,15 @@ public class PlayerController : MonoBehaviour
                 GameDataManager.Instance.CursorState(false);
             }
         }
+    }
+
+    /// <summary>
+    /// 플래이어 스킨 생성
+    /// </summary>
+    void GenViewPlayer()
+    {
+        GameObject _obj = Instantiate(GameDataManager.Instance.GetCharactorData(m_charactorIndex).m_object, transform);
+        _obj.transform.localPosition = m_viewPlayerGenPos;
     }
 
     /// <summary>
