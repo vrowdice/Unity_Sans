@@ -25,13 +25,13 @@ public class SimpleAtk : MonoBehaviour
     {
         if (argIsMovePlayerAtk)
         {
-            GetComponent<MeshRenderer>().material = GameManager.Instance.GetMovePlayerAtkObjMat;
+            GetComponent<MeshRenderer>().material = RoundManager.Instance.GetMovePlayerAtkObjMat;
             m_isMovePlayerAtk = true;
             gameObject.tag = "MovePlayerAttack";
         }
         else
         {
-            GetComponent<MeshRenderer>().material = GameManager.Instance.GetAtkObjMat;
+            GetComponent<MeshRenderer>().material = RoundManager.Instance.GetAtkObjMat;
             m_isMovePlayerAtk = false;
             gameObject.tag = "Attack";
         }
@@ -81,7 +81,7 @@ public class SimpleAtk : MonoBehaviour
                 argSpeed * Time.deltaTime);
             if (Mathf.Abs(-10.0f - transform.position.y) < 0.01f)
             {
-                GameManager.Instance.WaitSimpleAtk(this);
+                RoundManager.Instance.WaitSimpleAtk(this);
                 break;
             }
 

@@ -55,7 +55,7 @@ public class UIObjManager : MonoBehaviour
     /// </summary>
     public void ActiveUIObj(bool argState)
     {
-        if (GameManager.Instance.GetPhase != 0)
+        if (RoundManager.Instance.GetPhase != 0)
         {
             m_recoverBtn.SetActive(true);
         }

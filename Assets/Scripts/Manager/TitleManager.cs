@@ -82,7 +82,7 @@ public class TitleManager : MonoBehaviour
         if(other.tag == "InteractBtn")
         {
             m_focusedBtn = other.GetComponent<RoundSelectBtn>();
-            m_roundText.text = GameDataManager.Instance.GetRoundData(m_focusedBtn.GetRoundIndex).m_roundName;
+            m_roundText.text = GameManager.Instance.GetRoundData(m_focusedBtn.GetRoundIndex).m_roundName;
         }
     }
 
@@ -106,7 +106,7 @@ public class TitleManager : MonoBehaviour
     /// </summary>
     public void StartRound()
     {
-        GameDataManager.Instance.GoMainScene(m_focusedBtn.GetRoundIndex);
+        GameManager.Instance.GoMainScene(m_focusedBtn.GetRoundIndex);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public class TitleManager : MonoBehaviour
     /// </summary>
     void RoundSelectBtnSetting()
     {
-        int _roundDataListCount = GameDataManager.Instance.GetRoundDataList.Count;
+        int _roundDataListCount = GameManager.Instance.GetRoundDataList.Count;
         m_minScrollPos = -(_roundDataListCount - 1) * (m_roundSelectBtnXSize + m_roundSelectBtnDistance);
 
         m_roundSelectBtnParentTransform = new GameObject("RoundSelectBtnParent").transform;
@@ -122,7 +122,7 @@ public class TitleManager : MonoBehaviour
 
         for(int i = 0; i < _roundDataListCount; i++)
         {
-            RoundData _roundData = GameDataManager.Instance.GetRoundData(i);
+            RoundData _roundData = GameManager.Instance.GetRoundData(i);
             GameObject _selectBtnObj = Instantiate(m_roundSelectBtnPrefeb, m_roundSelectBtnParentTransform);
             _selectBtnObj.transform.localPosition = new Vector3(i * (m_roundSelectBtnXSize + m_roundSelectBtnDistance), 0.0f, 0.0f);
             _selectBtnObj.GetComponent<RoundSelectBtn>().SetRoundSelectBtn(this, _roundData.m_roundSprite, _roundData.m_roundIndex);

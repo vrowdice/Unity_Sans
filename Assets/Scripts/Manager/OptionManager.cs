@@ -21,6 +21,11 @@ public class OptionManager : MonoBehaviour
     /// </summary>
     [SerializeField]
     Slider m_effectSoundSlider = null;
+    /// <summary>
+    /// 값을 표시할 택스트
+    /// </summary>
+    Text m_backgroundValueText = null;
+    Text m_effectSoundText = null;
 
     /// <summary>
     /// 옵션이 활성화 되었는지
@@ -30,10 +35,19 @@ public class OptionManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if(GameDataManager.Instance == null)
+        //게임 매니저가 없을 경우 삭제
+        if(GameManager.Instance == null)
         {
             Destroy(gameObject);
         }
+
+        //택스트 가져오기
+        m_backgroundValueText = m_backgroundSoundSlider.transform.GetChild(0).GetComponent<Text>();
+        m_effectSoundText = m_effectSoundSlider.transform.GetChild(0).GetComponent<Text>();
+
+        //초기화
+        BackGroundSlider();
+        EffectSoundSlider();
     }
 
     /// <summary>
@@ -41,11 +55,13 @@ public class OptionManager : MonoBehaviour
     /// </summary>
     public void BackGroundSlider()
     {
-        GameDataManager.Instance.GetSoundManager.BackgroundSoundVolume(m_backgroundSoundSlider.value / 100);
+        GameManager.Instance.GetSoundManager.BackgroundSoundVolume(m_backgroundSoundSlider.value / 100);
+        m_backgroundValueText.text = m_backgroundSoundSlider.value.ToString();
     }
     public void EffectSoundSlider()
     {
-        GameDataManager.Instance.GetSoundManager.EffectSoundVolume(m_effectSoundSlider.value / 100);
+        GameManager.Instance.GetSoundManager.EffectSoundVolume(m_effectSoundSlider.value / 100);
+        m_effectSoundText.text = m_effectSoundSlider.value.ToString();
     }
 
     /// <summary>
@@ -61,7 +77,7 @@ public class OptionManager : MonoBehaviour
     /// </summary>
     public void BackTitle()
     {
-        GameDataManager.Instance.GoTitleScene();
+        GameManager.Instance.GoTitleScene();
     }
 
     public void OptionState(bool argState)
@@ -71,22 +87,22 @@ public class OptionManager : MonoBehaviour
         if (m_optionState == true)
         {
             m_optionPanel.SetActive(true);
-            GameDataManager.Instance.CursorState(true);
+            GameManager.Instance.ChangeCursorState(true);
 
-            if (GameManager.Instance != null)
+            if (RoundManager.Instance != null)
             {
-                GameManager.Instance.GetPlayerController.SetPlayerControllFlag = false;
+                RoundManager.Instance.GetPlayerController.SetPlayerControllFlag = false;
             }
             Time.timeScale = 0;
         }
         else
         {
             m_optionPanel.SetActive(false);
-            GameDataManager.Instance.CursorState(false);
+            GameManager.Instance.ChangeCursorState(false);
 
-            if (GameManager.Instance != null)
+            if (RoundManager.Instance != null)
             {
-                GameManager.Instance.GetPlayerController.SetPlayerControllFlag = true;
+                RoundManager.Instance.GetPlayerController.SetPlayerControllFlag = true;
             }
             Time.timeScale = 1;
         }

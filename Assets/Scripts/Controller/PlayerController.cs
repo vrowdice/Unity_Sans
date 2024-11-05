@@ -156,7 +156,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (GameManager.Instance.GetIsTiming)
+        if (RoundManager.Instance.GetIsTiming)
         {
             if (other.tag == "Attack")
             {
@@ -211,7 +211,11 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         MouseBtnInputControll();
-        KeyboardInputControll();
+
+        if(GameManager.Instance != null)
+        {
+            KeyboardInputControll();
+        }
     }
 
     /// <summary>
@@ -236,7 +240,7 @@ public class PlayerController : MonoBehaviour
         GenViewPlayer();
 
         //커서 상태 비활성화
-        GameDataManager.Instance.CursorState(false);
+        GameManager.Instance.ChangeCursorState(false);
     }
 
     /// <summary>
@@ -272,7 +276,7 @@ public class PlayerController : MonoBehaviour
             SetLateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
 
-            GameDataManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.SetRoundData.m_soundData.m_hit);
+            GameManager.Instance.GetSoundManager.PlayEffectSound(RoundManager.Instance.SetRoundData.m_soundData.m_hit);
         }
     }
 
@@ -291,7 +295,7 @@ public class PlayerController : MonoBehaviour
         SetHp += argManageHp;
         SetLateHp += argManageHp;
 
-        GameDataManager.Instance.GetSoundManager.PlayEffectSound(GameManager.Instance.SetRoundData.m_soundData.m_heal);
+        GameManager.Instance.GetSoundManager.PlayEffectSound(RoundManager.Instance.SetRoundData.m_soundData.m_heal);
     }
 
     /// <summary>
@@ -412,16 +416,16 @@ public class PlayerController : MonoBehaviour
             {
                 if (m_InteractBtnObj.name == "StartBtn")
                 {
-                    if (GameManager.Instance.GetIsGameOver)
+                    if (RoundManager.Instance.GetIsGameOver)
                     {
-                        GameManager.Instance.RestartGame();
+                        RoundManager.Instance.RestartGame();
                         ResetPlayerState();
                     }
                     else
                     {
                         m_InteractBtnObj.GetComponent<MeshRenderer>().material = m_standardInteractMat;
                         m_InteractBtnObj = null;
-                        GameManager.Instance.PhaseStart();
+                        RoundManager.Instance.PhaseStart();
                     }
                 }
                 else if (m_InteractBtnObj.name == "RecoverBtn")
@@ -431,24 +435,27 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// 키보드 입력 제어
+    /// </summary>
     void KeyboardInputControll()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            GameDataManager.Instance.GetOptionManager.OptionState(true);
+            GameManager.Instance.GetOptionManager.OptionState(true);
         }
 
         if (Input.GetKey(KeyCode.LeftAlt))
         {
             m_playerControllFlag = false;
-            GameDataManager.Instance.CursorState(true);
+            GameManager.Instance.ChangeCursorState(true);
         }
         else
         {
-            if(GameDataManager.Instance.GetOptionManager.GetOptionState == false)
+            if(GameManager.Instance.GetOptionManager.GetOptionState == false)
             {
                 m_playerControllFlag = true;
-                GameDataManager.Instance.CursorState(false);
+                GameManager.Instance.ChangeCursorState(false);
             }
         }
     }
@@ -458,7 +465,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void GenViewPlayer()
     {
-        GameObject _obj = Instantiate(GameDataManager.Instance.GetCharactorData(m_charactorIndex).m_object, transform);
+        GameObject _obj = Instantiate(GameManager.Instance.GetCharactorData(m_charactorIndex).m_object, transform);
         _obj.transform.localPosition = m_viewPlayerGenPos;
     }
 
@@ -532,7 +539,7 @@ public class PlayerController : MonoBehaviour
                 m_recoverCount = m_maxRecoverCount;
             }
 
-            GameManager.Instance.GetUIObjManager.SetRecoverCountTextObj(m_recoverCount);
+            RoundManager.Instance.GetUIObjManager.SetRecoverCountTextObj(m_recoverCount);
         }
     }
     public float SetHp
@@ -546,7 +553,7 @@ public class PlayerController : MonoBehaviour
             m_hp = value;
             if (m_hp <= 0)
             {
-                GameManager.Instance.GameOver(false);
+                RoundManager.Instance.GameOver(false);
             }
             else if(m_hp >= m_maxHp)
             {

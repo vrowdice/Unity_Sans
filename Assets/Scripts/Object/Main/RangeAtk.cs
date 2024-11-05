@@ -49,7 +49,7 @@ public class RangeAtk : MonoBehaviour
     /// </summary>
     void WarnAtk()
     {
-        m_atkObj.GetComponent<MeshRenderer>().material = GameManager.Instance.GetWarnMat;
+        m_atkObj.GetComponent<MeshRenderer>().material = RoundManager.Instance.GetWarnMat;
         m_atkObj.tag = "Untagged";
     }
     /// <summary>
@@ -57,7 +57,7 @@ public class RangeAtk : MonoBehaviour
     /// </summary>
     void StartAtk()
     {
-        m_atkObj.GetComponent<MeshRenderer>().material = GameManager.Instance.GetAtkObjMat;
+        m_atkObj.GetComponent<MeshRenderer>().material = RoundManager.Instance.GetAtkObjMat;
         m_atkObj.tag = "Attack";
     }
 
@@ -66,7 +66,7 @@ public class RangeAtk : MonoBehaviour
     /// </summary>
     public void ResetObj()
     {
-        GameManager.Instance.WaitRangeAtk(this);
+        RoundManager.Instance.WaitRangeAtk(this);
 
         m_atkObj.tag = "Untagged";
         m_warnTime = 0.0f;
