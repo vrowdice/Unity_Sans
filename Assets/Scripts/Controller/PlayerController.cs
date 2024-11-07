@@ -205,11 +205,15 @@ public class PlayerController : MonoBehaviour
             }
 
             ConstantGravity();
-            CameraControll();
         }
     }
     private void Update()
     {
+        if (m_playerControllFlag == true)
+        {
+            CameraControll();
+        }
+
         MouseBtnInputControll();
 
         if(GameManager.Instance != null)
