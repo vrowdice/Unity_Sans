@@ -69,7 +69,10 @@ public class OptionManager : MonoBehaviour
     /// </summary>
     public void ExitGame()
     {
+        //유니티 에디터에서 실행 중일 경우
+        #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
+        #endif
         Application.Quit();
     }
     /// <summary>
