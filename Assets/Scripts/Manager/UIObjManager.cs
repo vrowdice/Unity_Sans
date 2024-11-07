@@ -55,13 +55,13 @@ public class UIObjManager : MonoBehaviour
     /// </summary>
     public void ActiveUIObj(bool argState)
     {
-        if (RoundManager.Instance.GetPhase != 0)
+        if (RoundManager.Instance.GetPhase == 0)
         {
-            m_recoverBtn.SetActive(true);
+            m_recoverBtn.SetActive(false);
         }
         else
         {
-            m_recoverBtn.SetActive(false);
+            m_recoverBtn.SetActive(true);
         }
         gameObject.SetActive(argState);
 

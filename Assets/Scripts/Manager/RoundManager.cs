@@ -519,8 +519,7 @@ public class RoundManager : MonoBehaviour
     public void PhaseOver()
     {
         ResetAllObj();
-
-        m_uIObjManager.ActiveUIObj(true);
+        
         m_uIObjManager.SetRecoverCountTextObj(m_playerController.SetRecoverCount);
 
         m_phase++;
@@ -528,6 +527,7 @@ public class RoundManager : MonoBehaviour
         m_phaseStartTime = 0.0f;
         m_atkIndex = 0;
 
+        m_uIObjManager.ActiveUIObj(true);
         StopTimer();
         GetCSVData();
     }

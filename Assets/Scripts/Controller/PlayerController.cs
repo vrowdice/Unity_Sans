@@ -59,12 +59,12 @@ public class PlayerController : MonoBehaviour
     /// 점프 속도
     /// </summary>
     [SerializeField]
-    float m_jumpSpeed = 15.0f;
+    float m_jumpForce = 15.0f;
     /// <summary>
-    /// 최대 점프 높이
+    /// 최대 점프 설정 게이지
     /// </summary>
     [SerializeField]
-    float m_maxJumpHight = 10.0f;
+    float m_maxjumpGauge = 10.0f;
     /// <summary>
     /// 직선 움직임 속도
     /// </summary>
@@ -113,9 +113,9 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private int m_recoverCount = 0;
     /// <summary>
-    /// 현재 최대 점프 가능 위치
+    /// 현재 최대 점프 게이지
     /// </summary>
-    private float m_maxJumpPos = 0.0f;
+    private float m_jumpGauge = 0.0f;
     /// <summary>
     /// 마우스 회전값 저장
     /// </summary>
@@ -177,6 +177,7 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.tag == "Terrain")
         {
             m_reachWallFlag = true;
+            m_jumpGauge = m_maxjumpGauge;
         }
     }
     private void OnCollisionExit(Collision collision)
@@ -194,6 +195,7 @@ public class PlayerController : MonoBehaviour
     {
         StartSetting();
     }
+
     private void FixedUpdate()
     {
         if(m_playerControllFlag == true)
@@ -310,13 +312,17 @@ public class PlayerController : MonoBehaviour
     {
         while (true)
         {
-            float _healthDifference = Mathf.Abs(SetHp - SetLateHp);
+            float _healthDifference = SetHp - SetLateHp;
             if (_healthDifference > 0.1f)
             {
                 if (SetHp > SetLateHp)
                 {
                     SetHp -= 1;
                 }
+            }
+            else
+            {
+                yield return null;
             }
 
             float _syncInterval = _healthDifference > 15.0f ? Mathf.Max(0.1f, 4.0f / _healthDifference) : m_maxHpSyncTime;
@@ -340,25 +346,27 @@ public class PlayerController : MonoBehaviour
     {
         if (m_canJumpFlag)
         {
-            //점프 입력 중
+            // 점프 입력 중
             if (Input.GetAxisRaw("Jump") >= 0.1f)
             {
+                // 지면에 있을 때만 점프 시작
                 if (m_groundFlag)
                 {
-                    m_maxJumpPos = transform.position.y + m_maxJumpHight;
+                    m_groundFlag = false; // 지면을 떠난 상태로 변경
                 }
 
-                if (transform.position.y >= m_maxJumpPos - 0.3f)
+                // 최대 점프 높이에 도달하면 점프 중단
+                if (m_jumpGauge <= 0.0f)
                 {
                     CantJump();
                 }
-
-                transform.position = Vector3.MoveTowards(
-                    transform.position,
-                    new Vector3(transform.position.x, m_maxJumpPos, transform.position.z),
-                    m_jumpSpeed * Time.fixedDeltaTime);
+                else
+                {
+                    m_jumpGauge -= 0.01f;
+                    m_rigidbody.velocity = new Vector3(m_rigidbody.velocity.x, m_jumpForce, m_rigidbody.velocity.z);
+                }
             }
-            //점프 입력 없음
+            // 점프 입력 없음
             else
             {
                 if (!m_groundFlag)
@@ -368,11 +376,13 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
     /// <summary>
     /// 점프 입력 제한
     /// </summary>
     void CantJump()
     {
+        m_rigidbody.velocity = new Vector3(m_rigidbody.velocity.x, 0.0f, m_rigidbody.velocity.z);
         m_canJumpFlag = false;
     }
 
@@ -481,6 +491,8 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(0.0f, 4.0f, 0.0f);
         SetHp = m_maxHp;
         SetLateHp = m_maxHp;
+        SetHp = m_hp;
+        SetLateHp = m_lateHp;
         SetRecoverCount = m_maxRecoverCount;
     }
 
