@@ -151,7 +151,7 @@ GameObject:
   - component: {fileID: 4604702591985212196}
   - component: {fileID: 4604702591985212199}
   - component: {fileID: 4604702591985212197}
-  - component: {fileID: 2100534005543289193}
+  - component: {fileID: 201483662}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -190,6 +190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_standardInteractMat: {fileID: 2100000, guid: 9cba7c41e77ec2146aa85ad84f25cef8, type: 2}
   m_activeInteractMat: {fileID: 2100000, guid: 7d1c69001abe24c43b9c96df3a943690, type: 2}
+  m_charactorIndex: 1
   m_maxRecoverCount: 2
   m_recoverHp: 40
   m_cameraBaseTransform: {fileID: 4604702592658396175}
@@ -197,8 +198,8 @@ MonoBehaviour:
   m_camMinXRotation: -80
   m_camMaxXRotation: 50
   m_fallSpeed: 12
-  m_jumpSpeed: 15
-  m_maxJumpHight: 10
+  m_jumpForce: 15
+  m_maxjumpGauge: 0.25
   m_moveSpeed: 10
   m_maxHp: 92
   m_maxHpSyncTime: 1
@@ -214,13 +215,13 @@ Rigidbody:
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
---- !u!136 &2100534005543289193
-CapsuleCollider:
+--- !u!65 &201483662
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -229,9 +230,8 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 1.5
-  m_Direction: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1.5, z: 1}
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &4604702592023800418
 GameObject:

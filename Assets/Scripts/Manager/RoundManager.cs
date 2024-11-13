@@ -957,6 +957,7 @@ public class RoundManager : MonoBehaviour
                     m_wallCenterPos.position.y,
                     m_playerController.transform.position.z),
                     m_gravityAtkSpeed * Time.deltaTime);
+                m_playerController.SetGravity = false;
             }
             else
             {
@@ -972,6 +973,7 @@ public class RoundManager : MonoBehaviour
                 if (m_playerController.transform.position.y <= 0.0f)
                 {
                     m_playerController.SetCanMoveFlage = true;
+                    m_playerController.SetGravity = true;
 
                     GameManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_hitGround);
 

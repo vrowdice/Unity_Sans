@@ -539,6 +539,11 @@ public class PlayerController : MonoBehaviour
         get { return m_playerControllFlag; }
         set { m_playerControllFlag = value; }
     }
+    public bool SetGravity
+    {
+        get { return m_rigidbody.useGravity; }
+        set { m_rigidbody.useGravity = value; }
+    }
     public int SetRecoverCount
     {
         get { return m_recoverCount; }

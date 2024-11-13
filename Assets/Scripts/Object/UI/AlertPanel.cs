@@ -11,7 +11,6 @@ public class AlertPanel : MonoBehaviour
     /// <param name="argAlertStr">alert text</param>
     public void Alert(string argAlertStr)
     {
-        Debug.Log("in");
         GetComponentInChildren<Text>().text =
             argAlertStr;
     }

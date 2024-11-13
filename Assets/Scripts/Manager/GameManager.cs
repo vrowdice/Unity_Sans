@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
     /// 캐릭터 데이터 리스트
     /// </summary>
     [SerializeField]
-    List<CharactorData> m_charactorDataList = new List<CharactorData>();
+    List<CharacterData> m_charactorDataList = new List<CharacterData>();
     /// <summary>
     /// 라운드 데이터 리스트
     /// </summary>
@@ -63,6 +63,10 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private int m_roundIndex = 0;
     /// <summary>
+    /// 현재 사용중인 캐릭터 인덱스
+    /// </summary>
+    private int m_characterIndex = 0;
+    /// <summary>
     /// 현재 씬 캔버스의 트렌스폼
     /// </summary>
     private Transform m_canvasTrans = null;
@@ -82,7 +86,13 @@ public class GameManager : MonoBehaviour
     /// 
     /// 저장 필요
     /// </summary>
-    List<bool> m_clearRoundList = new List<bool>();
+    List<bool> m_roundClearList = new List<bool>();
+    /// <summary>
+    /// 플래이어가 라운드를 클리어 했을 때 맞은 횟수
+    /// 
+    /// 저장 필요
+    /// </summary>
+    List<int> m_roundHitList = new List<int>();
     /// <summary>
     /// 돈
     /// 
@@ -92,24 +102,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        //싱글톤 세팅
-        if (g_gameDataManager == null)
-        {
-            g_gameDataManager = this;
-            SceneManager.sceneLoaded -= SceneLoaded;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-        DontDestroyOnLoad(gameObject);
-
-        //씬 로드하는 경우
-        SceneManager.sceneLoaded += SceneLoaded;
-        //사운드 매니저 할당
-        m_soundManager = GetComponent<SoundManager>();
-        //커서 상태 변경
-        ChangeCursorState(true);
+        AwakeSetting();
     }
 
     private void OnEnable()
@@ -144,6 +137,30 @@ public class GameManager : MonoBehaviour
         }
     }
     /// <summary>
+    /// 어웨이크 세팅
+    /// </summary>
+    void AwakeSetting()
+    {
+        //싱글톤 세팅
+        if (g_gameDataManager == null)
+        {
+            g_gameDataManager = this;
+            SceneManager.sceneLoaded -= SceneLoaded;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        DontDestroyOnLoad(gameObject);
+
+        //씬 로드하는 경우
+        SceneManager.sceneLoaded += SceneLoaded;
+        //사운드 매니저 할당
+        m_soundManager = GetComponent<SoundManager>();
+        //커서 상태 변경
+        ChangeCursorState(true);
+    }
+    /// <summary>
     /// 세이브 할 리스트 초기화
     /// 모두 false 값 할당
     /// </summary>
@@ -151,12 +168,14 @@ public class GameManager : MonoBehaviour
     {
         for(int i = 0; i < m_roundDataList.Count; i++)
         {
-            m_clearRoundList.Add(false);
+            m_roundClearList.Add(false);
         }
         for(int i = 0;  i < m_charactorDataList.Count; i++)
         {
             m_haveCharactorList.Add(false);
         }
+
+        m_haveCharactorList[0] = true;
     }
 
     /// <summary>
@@ -164,7 +183,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="argIndex">캐릭터 인덱스</param>
     /// <returns>캐릭터 데이터</returns>
-    public CharactorData GetCharactorData(int argIndex)
+    public CharacterData GetCharactorData(int argIndex)
     {
         if(argIndex < 0 || m_charactorDataList.Count < argIndex)
         {
@@ -184,6 +203,15 @@ public class GameManager : MonoBehaviour
             return null;
         }
         return m_roundDataList[argIndex];
+    }
+
+    /// <summary>
+    /// 플래이어가 캐릭터를 가진 것으로 처리
+    /// </summary>
+    /// <param name="argCharacterIndex">캐릭터 인덱스</param>
+    public void HaveCharacter(int argCharacterIndex)
+    {
+        m_haveCharactorList[argCharacterIndex] = true;
     }
 
     /// <summary>
@@ -267,15 +295,41 @@ public class GameManager : MonoBehaviour
     {
         get { return m_optionManager; }
     }
+    public List<CharacterData> GetCharacterDataList
+    {
+        get { return m_charactorDataList; }
+    }
     public List<RoundData> GetRoundDataList
     {
         get { return m_roundDataList; }
+    }
+    public List<bool> GetHaveCharactorList
+    {
+        get { return m_haveCharactorList; }
+    }
+    public List<bool> GetRoundClearList
+    {
+        get { return m_roundClearList; }
     }
     public Transform GetCanvasTrans
     {
         get { return m_canvasTrans; }
     }
 
+    public int SetCharacterIndex
+    {
+        get { return m_characterIndex; }
+        set
+        {
+            if(m_haveCharactorList[value] == false)
+            {
+                Debug.Log("no have char");
+                return;
+            }
+
+            m_characterIndex = value;
+        }
+    }
     public int SetRoundIndex
     {
         get { return m_roundIndex; }

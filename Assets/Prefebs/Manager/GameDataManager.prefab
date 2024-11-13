@@ -302,6 +302,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_charactorDataList:
   - {fileID: 11400000, guid: df3a454649a7e5f43bfa16635600abf7, type: 2}
+  - {fileID: 11400000, guid: f4260224d91a2c243a2b344cccfeb5e3, type: 2}
   m_roundDataList:
   - {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
   - {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
