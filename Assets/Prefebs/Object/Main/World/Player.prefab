@@ -190,7 +190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_standardInteractMat: {fileID: 2100000, guid: 9cba7c41e77ec2146aa85ad84f25cef8, type: 2}
   m_activeInteractMat: {fileID: 2100000, guid: 7d1c69001abe24c43b9c96df3a943690, type: 2}
-  m_charactorCode: 0
+  m_charactorCode: 40001
   m_maxRecoverCount: 2
   m_recoverHp: 40
   m_cameraBaseTransform: {fileID: 4604702592658396175}
