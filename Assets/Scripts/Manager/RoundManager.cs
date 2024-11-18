@@ -306,7 +306,7 @@ public class RoundManager : MonoBehaviour
         //전역 인스턴스 할당
         if(GameManager.Instance != null)
         {
-            m_roundData = GameManager.Instance.GetRoundData(GameManager.Instance.SetRoundIndex);
+            m_roundData = GameManager.Instance.GetRoundData(GameManager.Instance.RoundIndex);
         }
     }
     /// <summary>
@@ -364,7 +364,7 @@ public class RoundManager : MonoBehaviour
         m_repeatAtkDataList = new List<RepeatAtkData>();
 
         // Phase data name = "Phase + N"
-        List<Dictionary<string, object>> _data = CSVReader.Read(m_roundData.m_roundIndex + "/Phase" + m_phase);
+        List<Dictionary<string, object>> _data = CSVReader.Read(m_roundData.name + "/Phase" + m_phase);
 
         // 데이터가 null이거나 비어있을 경우 처리
         if (_data == null || _data.Count == 0)
@@ -507,7 +507,7 @@ public class RoundManager : MonoBehaviour
         {
             if (GetPhase == 0)
             {
-                GameManager.Instance.GetSoundManager.PlayBackgroundSound(m_roundData.m_soundData.m_backGround);
+                GameManager.Instance.SoundManager.PlayBackgroundSound(m_roundData.m_soundData.m_backGround);
             }
             m_uIObjManager.ActiveUIObj(false);
             StartTimer();
@@ -542,7 +542,7 @@ public class RoundManager : MonoBehaviour
         //돈 지급
         if (argWinOrDefeat == true)
         {
-            GameManager.Instance.SetMoney += (m_phase - 1) * 10;
+            GameManager.Instance.Money += (m_phase - 1) * 10;
         }
 
         ResetAllObj();
@@ -803,7 +803,7 @@ public class RoundManager : MonoBehaviour
         _atk.transform.rotation = Quaternion.Euler(argRotation);
         _atk.transform.localScale = argSize;
 
-        GameManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_rangeAtk);
+        GameManager.Instance.SoundManager.PlayEffectSound(m_roundData.m_soundData.m_rangeAtk);
     }
     /// <summary>
     /// 발판 생성
@@ -862,7 +862,7 @@ public class RoundManager : MonoBehaviour
             }
         }
 
-        GameManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_popAtk);
+        GameManager.Instance.SoundManager.PlayEffectSound(m_roundData.m_soundData.m_popAtk);
     }
     /// <summary>
     /// 전체 단순 공격 코루틴
@@ -884,7 +884,7 @@ public class RoundManager : MonoBehaviour
     /// <param name="argDirZ">공격 방향</param>
     void GravityAtk(float argDirZ)
     {
-        GameManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_gravityAtk);
+        GameManager.Instance.SoundManager.PlayEffectSound(m_roundData.m_soundData.m_gravityAtk);
 
         StartCoroutine(IEChangeWall(argDirZ));
         StartCoroutine(IEGravityAtk());
@@ -957,7 +957,6 @@ public class RoundManager : MonoBehaviour
                     m_wallCenterPos.position.y,
                     m_playerController.transform.position.z),
                     m_gravityAtkSpeed * Time.deltaTime);
-                m_playerController.SetGravity = false;
             }
             else
             {
@@ -973,9 +972,8 @@ public class RoundManager : MonoBehaviour
                 if (m_playerController.transform.position.y <= 0.0f)
                 {
                     m_playerController.SetCanMoveFlage = true;
-                    m_playerController.SetGravity = true;
 
-                    GameManager.Instance.GetSoundManager.PlayEffectSound(m_roundData.m_soundData.m_hitGround);
+                    GameManager.Instance.SoundManager.PlayEffectSound(m_roundData.m_soundData.m_hitGround);
 
                     yield break;
                 }

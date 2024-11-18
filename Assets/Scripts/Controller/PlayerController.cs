@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
     /// 캐릭터 인덱스 강제 설정
     /// </summary>
     [SerializeField]
-    int m_charactorIndex = 0;
+    int m_charactorCode = 0;
     /// <summary>
     /// 최대 회복 횟수
     /// </summary>
@@ -233,6 +233,8 @@ public class PlayerController : MonoBehaviour
         m_uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         m_rigidbody = GetComponent<Rigidbody>();
 
+        m_charactorCode = GameManager.Instance.CharacterCode;
+
         //플래이어 위치 초기화
         ResetPlayerState();
 
@@ -282,7 +284,7 @@ public class PlayerController : MonoBehaviour
             SetLateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
 
-            GameManager.Instance.GetSoundManager.PlayEffectSound(RoundManager.Instance.SetRoundData.m_soundData.m_hit);
+            GameManager.Instance.SoundManager.PlayEffectSound(RoundManager.Instance.SetRoundData.m_soundData.m_hit);
         }
     }
 
@@ -301,7 +303,7 @@ public class PlayerController : MonoBehaviour
         SetHp += argManageHp;
         SetLateHp += argManageHp;
 
-        GameManager.Instance.GetSoundManager.PlayEffectSound(RoundManager.Instance.SetRoundData.m_soundData.m_heal);
+        GameManager.Instance.SoundManager.PlayEffectSound(RoundManager.Instance.SetRoundData.m_soundData.m_heal);
     }
 
     /// <summary>
@@ -352,7 +354,7 @@ public class PlayerController : MonoBehaviour
                 // 지면에 있을 때만 점프 시작
                 if (m_groundFlag)
                 {
-                    m_groundFlag = false; // 지면을 떠난 상태로 변경
+                    m_groundFlag = false;
                 }
 
                 // 최대 점프 높이에 도달하면 점프 중단
@@ -456,7 +458,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            GameManager.Instance.GetOptionManager.OptionState(true);
+            GameManager.Instance.OptionManager.OptionState(true);
         }
 
         if (Input.GetKey(KeyCode.LeftAlt))
@@ -466,7 +468,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if(GameManager.Instance.GetOptionManager.GetOptionState == false)
+            if(GameManager.Instance.OptionManager.GetOptionState == false)
             {
                 m_playerControllFlag = true;
                 GameManager.Instance.ChangeCursorState(false);
@@ -479,8 +481,27 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void GenViewPlayer()
     {
-        GameObject _obj = Instantiate(GameManager.Instance.GetCharactorData(m_charactorIndex).m_object, transform);
+        GameObject _obj = Instantiate(GameManager.Instance.GetCharactorData(m_charactorCode).m_object, transform);
         _obj.transform.localPosition = m_viewPlayerGenPos;
+    }
+
+    /// <summary>
+    /// 점프 상태 변경
+    /// </summary>
+    /// <param name="argState">현재 점프 상태</param>
+    public void JumpState(bool argState)
+    {
+        if(argState == true)
+        {
+            SetIsCanJumpFlag = true;
+            SetIsGroundFlag = true;
+            m_jumpGauge = m_maxjumpGauge;
+        }
+        else
+        {
+            SetIsCanJumpFlag = false;
+            SetIsGroundFlag = false;
+        }
     }
 
     /// <summary>

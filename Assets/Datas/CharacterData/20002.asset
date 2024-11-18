@@ -10,9 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dacc7d5fdfd0d947b2ae9e87f03dbcb, type: 3}
-  m_Name: Capsule
+  m_Name: 20002
   m_EditorClassIdentifier: 
-  m_index: 0
-  m_name: Capsule
-  m_object: {fileID: 3909337525523016407, guid: 0801aeef226aa604ab03e4deb07e8f5f, type: 3}
-  m_type: 3
+  m_name: Epic2
+  m_object: {fileID: 0}
+  m_type: 1

@@ -7,12 +7,6 @@ using UnityEngine;
 public class CharacterData : ScriptableObject
 {
     /// <summary>
-    /// 캐릭터 인덱스
-    /// 게임 매니저 안의 캐릭터 데이터 인덱스와 같아야 함
-    /// </summary>
-    public int m_index = 0;
-
-    /// <summary>
     /// 캐릭터 이름
     /// </summary>
     public string m_name = string.Empty;

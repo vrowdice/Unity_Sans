@@ -62,8 +62,8 @@ MonoBehaviour:
   m_rangeAtkObjCount: 30
   m_rangeAtkWarnTime: 1
   m_rangeAtkTime: 1
-  m_popAtkMaxHeight: 0
+  m_popAtkMaxHeight: 50
   m_popAtkActiveTime: 1.5
-  m_popAtkSpeed: 100
+  m_popAtkSpeed: 150
   m_popAtkWarnTime: 0.5
   m_gravityAtkSpeed: 20

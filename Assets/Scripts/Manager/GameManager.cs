@@ -47,6 +47,25 @@ public class GameManager : MonoBehaviour
     GameObject m_alertObjPrefeb = null;
 
     /// <summary>
+    /// 라운드 딕셔너리
+    /// 라운드 데이터 검색 및 라운드 저장 정보 탐색
+    /// </summary>
+    private Dictionary<int, RoundInfo> m_roundDic = new Dictionary<int, RoundInfo>();
+    /// <summary>
+    /// 캐릭터 딕셔너리
+    /// 캐릭터 데이터 검색 및 라운드 저장 정보 탐색
+    /// </summary>
+    private Dictionary<int, CharacterInfo> m_characterDic = new Dictionary<int, CharacterInfo>();
+    /// <summary>
+    /// 라운드 딕셔너리 정렬 리스트
+    /// </summary>
+    private List<int> m_roundDicSortList = new List<int>();
+    /// <summary>
+    /// 캐릭터 딕셔너리 정렬 리스트
+    /// </summary>
+    private List<int> m_characterDicSortList = new List<int>();
+
+    /// <summary>
     /// 사운드 매니저
     /// </summary>
     private SoundManager m_soundManager = null;
@@ -65,34 +84,12 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 현재 사용중인 캐릭터 인덱스
     /// </summary>
-    private int m_characterIndex = 0;
+    private int m_characterKey = 40001;
     /// <summary>
     /// 현재 씬 캔버스의 트렌스폼
     /// </summary>
     private Transform m_canvasTrans = null;
 
-    /// <summary>
-    /// 플래이어가 가지고 있는 캐릭터 리스트
-    /// true = 소유중
-    /// false = 소유중이 아님
-    /// 
-    /// 저장 필요
-    /// </summary>
-    List<bool> m_haveCharactorList = new List<bool>();
-    /// <summary>
-    /// 플래이어가 클리어 한 라운드 리스트
-    /// true = 클리어 함
-    /// false = 클리어 하지 못함
-    /// 
-    /// 저장 필요
-    /// </summary>
-    List<bool> m_roundClearList = new List<bool>();
-    /// <summary>
-    /// 플래이어가 라운드를 클리어 했을 때 맞은 횟수
-    /// 
-    /// 저장 필요
-    /// </summary>
-    List<int> m_roundHitList = new List<int>();
     /// <summary>
     /// 돈
     /// 
@@ -112,8 +109,37 @@ public class GameManager : MonoBehaviour
 
     private void OnEnableSetting()
     {
-        //저장 리스트 리셋
-        ResetSaveList();
+        //라운드 정보 딕셔너리 지정
+        for(int i = 0; i < m_roundDataList.Count; i++)
+        {
+            try
+            {
+                m_roundDic.Add(int.Parse(m_roundDataList[i].name) , new RoundInfo(m_roundDataList[i], false, false));
+                m_roundDicSortList.Add(int.Parse(m_roundDataList[i].name));
+            }
+            catch
+            {
+                Debug.Log("round data name is not a int " + m_roundDataList[i].name);
+            }
+        }
+        //캐릭터 정보 딕서니리 지정
+        for(int i = 0; i < m_charactorDataList.Count; i++)
+        {
+            try
+            {
+                m_characterDic.Add(int.Parse(m_charactorDataList[i].name), new CharacterInfo(m_charactorDataList[i], false));
+                m_characterDicSortList.Add(int.Parse(m_charactorDataList[i].name));
+            }
+            catch
+            {
+                Debug.Log("character data name is not a int " + m_charactorDataList[i].name);
+            }
+        }
+
+        m_roundDicSortList.Sort();
+        m_characterDicSortList.Sort();
+
+        m_characterDic[m_characterKey].m_isHave = true;
     }
 
     /// <summary>
@@ -133,7 +159,7 @@ public class GameManager : MonoBehaviour
 
             //돈 표시 패널 생성 및 초기화
             m_moneyPanel = Instantiate(m_moneyPanelPrefeb, m_canvasTrans).GetComponent<MoneyPanel>();
-            SetMoney = m_money;
+            Money = m_money;
         }
     }
     /// <summary>
@@ -160,58 +186,58 @@ public class GameManager : MonoBehaviour
         //커서 상태 변경
         ChangeCursorState(true);
     }
+
     /// <summary>
-    /// 세이브 할 리스트 초기화
-    /// 모두 false 값 할당
+    /// 라운드 정보 가져오기
     /// </summary>
-    void ResetSaveList()
+    /// <param name="argKey">라운드 키</param>
+    /// <returns>라운드 정보</returns>
+    public RoundInfo GetRoundInfo(int argKey)
     {
-        for(int i = 0; i < m_roundDataList.Count; i++)
+        try
         {
-            m_roundClearList.Add(false);
+            return m_roundDic[argKey];
         }
-        for(int i = 0;  i < m_charactorDataList.Count; i++)
+        catch
         {
-            m_haveCharactorList.Add(false);
+            Debug.Log("no have key " + argKey);
+            return null;
         }
-
-        m_haveCharactorList[0] = true;
     }
-
+    /// <summary>
+    /// 캐릭터 정보 가져오기
+    /// </summary>
+    /// <param name="argKey">캐릭터 키</param>
+    /// <returns>캐릭터 정보</returns>
+    public CharacterInfo GetCharacterInfo(int argKey)
+    {
+        try
+        {
+            return m_characterDic[argKey];
+        }
+        catch
+        {
+            Debug.Log("no have key " + argKey);
+            return null;
+        }
+    }
     /// <summary>
     /// 캐릭터 데이터 가져오기
     /// </summary>
-    /// <param name="argIndex">캐릭터 인덱스</param>
+    /// <param name="argKey">캐릭터 인덱스</param>
     /// <returns>캐릭터 데이터</returns>
-    public CharacterData GetCharactorData(int argIndex)
+    public CharacterData GetCharactorData(int argKey)
     {
-        if(argIndex < 0 || m_charactorDataList.Count < argIndex)
-        {
-            return null;
-        }
-        return m_charactorDataList[argIndex];
+        return GetCharacterInfo(argKey).m_data;
     }
     /// <summary>
     /// 라운드 데이터 가져오기
     /// </summary>
-    /// <param name="argIndex">라운드 인덱스</param>
+    /// <param name="argKey">라운드 인덱스</param>
     /// <returns>라운드 데이터</returns>
-    public RoundData GetRoundData(int argIndex)
+    public RoundData GetRoundData(int argKey)
     {
-        if (argIndex < 0 || m_roundDataList.Count < argIndex)
-        {
-            return null;
-        }
-        return m_roundDataList[argIndex];
-    }
-
-    /// <summary>
-    /// 플래이어가 캐릭터를 가진 것으로 처리
-    /// </summary>
-    /// <param name="argCharacterIndex">캐릭터 인덱스</param>
-    public void HaveCharacter(int argCharacterIndex)
-    {
-        m_haveCharactorList[argCharacterIndex] = true;
+        return GetRoundInfo(argKey).m_data;
     }
 
     /// <summary>
@@ -287,50 +313,42 @@ public class GameManager : MonoBehaviour
     {
         get { return g_gameDataManager; }
     }
-    public SoundManager GetSoundManager
+    public SoundManager SoundManager
     {
         get { return m_soundManager; }
     }
-    public OptionManager GetOptionManager
+    public OptionManager OptionManager
     {
         get { return m_optionManager; }
     }
-    public List<CharacterData> GetCharacterDataList
-    {
-        get { return m_charactorDataList; }
-    }
-    public List<RoundData> GetRoundDataList
-    {
-        get { return m_roundDataList; }
-    }
-    public List<bool> GetHaveCharactorList
-    {
-        get { return m_haveCharactorList; }
-    }
-    public List<bool> GetRoundClearList
-    {
-        get { return m_roundClearList; }
-    }
-    public Transform GetCanvasTrans
+    public Transform CanvasTrans
     {
         get { return m_canvasTrans; }
     }
-
-    public int SetCharacterIndex
+    public List<int> RoundDicSortList
     {
-        get { return m_characterIndex; }
+        get { return m_roundDicSortList; }
+    }
+    public List<int> CharacterDicSortList
+    {
+        get { return m_characterDicSortList; }
+    }
+
+    public int CharacterCode
+    {
+        get { return m_characterKey; }
         set
         {
-            if(m_haveCharactorList[value] == false)
+            if(m_characterDic[value].m_isHave == false)
             {
                 Debug.Log("no have char");
                 return;
             }
 
-            m_characterIndex = value;
+            m_characterKey = value;
         }
     }
-    public int SetRoundIndex
+    public int RoundIndex
     {
         get { return m_roundIndex; }
         set 
@@ -342,7 +360,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    public long SetMoney
+    public long Money
     {
         get { return m_money; }
         set

@@ -8,22 +8,17 @@ using UnityEngine;
 public class RoundData : ScriptableObject
 {
     /// <summary>
-    /// 라운드 인덱스
-    /// Resources 안의 파일 이름과 같은 이름을 공유
-    /// </summary>
-    public int m_roundIndex = 0;
-    /// <summary>
     /// 라운드 이름
     /// </summary>
-    public string m_roundName = string.Empty;
+    public string m_name = string.Empty;
     /// <summary>
     /// 라운드 표시 여부
     /// </summary>
-    public bool m_roundVisible = true;
+    public bool m_isVisible = true;
     /// <summary>
     /// 라운드 이미지
     /// </summary>
-    public Sprite m_roundSprite = null;
+    public Sprite m_sampleSprite = null;
     /// <summary>
     /// 패이즈가 시작되는 시간 조정
     /// </summary>

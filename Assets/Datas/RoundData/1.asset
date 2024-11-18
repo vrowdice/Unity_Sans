@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a7978ff75cc82f54799769ff552dae64, type: 3}
-  m_Name: Sans
+  m_Name: 1
   m_EditorClassIdentifier: 
-  m_roundIndex: 0
-  m_roundName: Sans
-  m_roundVisible: 1
-  m_roundSprite: {fileID: 21300000, guid: 1e6c71236bf33d5418dd3aac38997a50, type: 3}
+  m_key: 0
+  m_name: Sans
+  m_isVisible: 1
+  m_sampleSprite: {fileID: 21300000, guid: 1e6c71236bf33d5418dd3aac38997a50, type: 3}
   m_phaseStartTimeSet:
   - 2
   - 2

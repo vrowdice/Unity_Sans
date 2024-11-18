@@ -10,9 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dacc7d5fdfd0d947b2ae9e87f03dbcb, type: 3}
-  m_Name: Cube
+  m_Name: 20001
   m_EditorClassIdentifier: 
-  m_index: 1
-  m_name: Cube
-  m_object: {fileID: 6809794817779303525, guid: 7fb9bf3d8088e3c41a9b4e2dcdb9a7b3, type: 3}
-  m_type: 3
+  m_name: Epic1
+  m_object: {fileID: 0}
+  m_type: 1

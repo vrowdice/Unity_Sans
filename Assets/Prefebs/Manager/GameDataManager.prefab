@@ -301,12 +301,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_charactorDataList:
+  - {fileID: 11400000, guid: 83afff0369e1d99488098a31dc41bfb3, type: 2}
+  - {fileID: 11400000, guid: 66033a059006da74ab7a609142e96caf, type: 2}
+  - {fileID: 11400000, guid: 4362765c19aa26a4ab1657e8547a34df, type: 2}
+  - {fileID: 11400000, guid: cc454d66275f5c34bbea027de5e9c0af, type: 2}
+  - {fileID: 11400000, guid: 3b897922690b2724dbb3cd3e616e2dc3, type: 2}
+  - {fileID: 11400000, guid: 178b35691d8310d4384d78e85aa52286, type: 2}
   - {fileID: 11400000, guid: df3a454649a7e5f43bfa16635600abf7, type: 2}
   - {fileID: 11400000, guid: f4260224d91a2c243a2b344cccfeb5e3, type: 2}
   m_roundDataList:
   - {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
-  - {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
-  - {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
+  - {fileID: 11400000, guid: 0e64e90f1e077b64fb79b523a0f030b5, type: 2}
+  - {fileID: 11400000, guid: e9a6660e4ab4b2248b3ccb365c2cf97f, type: 2}
   m_optionManagerPrefeb: {fileID: 494688313676920901, guid: eec4d1829c5ab76488d40724a1f30684, type: 3}
   m_moneyPanelPrefeb: {fileID: 8334207696057552510, guid: 3540721e25141a44485180a9a607be69, type: 3}
   m_alertObjPrefeb: {fileID: 6054084243233978953, guid: 716d3a4693eae8b44aec556b1815c8af, type: 3}

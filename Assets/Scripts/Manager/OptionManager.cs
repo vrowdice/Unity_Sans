@@ -55,12 +55,12 @@ public class OptionManager : MonoBehaviour
     /// </summary>
     public void BackGroundSlider()
     {
-        GameManager.Instance.GetSoundManager.BackgroundSoundVolume(m_backgroundSoundSlider.value / 100);
+        GameManager.Instance.SoundManager.BackgroundSoundVolume(m_backgroundSoundSlider.value / 100);
         m_backgroundValueText.text = m_backgroundSoundSlider.value.ToString();
     }
     public void EffectSoundSlider()
     {
-        GameManager.Instance.GetSoundManager.EffectSoundVolume(m_effectSoundSlider.value / 100);
+        GameManager.Instance.SoundManager.EffectSoundVolume(m_effectSoundSlider.value / 100);
         m_effectSoundText.text = m_effectSoundSlider.value.ToString();
     }
 
