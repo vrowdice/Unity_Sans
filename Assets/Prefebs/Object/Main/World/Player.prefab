@@ -197,9 +197,9 @@ MonoBehaviour:
   m_mouseSensitivity: 5
   m_camMinXRotation: -80
   m_camMaxXRotation: 50
-  m_fallSpeed: 12
-  m_jumpForce: 15
-  m_maxjumpGauge: 0.25
+  m_fallSpeed: 11
+  m_jumpForce: 16
+  m_maxjumpGauge: 0.3
   m_moveSpeed: 10
   m_maxHp: 92
   m_maxHpSyncTime: 1
