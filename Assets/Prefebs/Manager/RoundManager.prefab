@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &745785846001667973
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 745785846001667995}
+  - component: {fileID: 745785846001667972}
+  m_Layer: 0
+  m_Name: RoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &745785846001667995
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 745785846001667973}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &745785846001667972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 745785846001667973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89f4e709d5e854a44b85eb6dd383fe2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_roundData: {fileID: 11400000, guid: 78c704a0c21f0ca4fb6ffa63b7c28b40, type: 2}
+  m_phase: 0
+  m_wallDirChangeSpeed: 150
+  m_wallHalfSize: 20
+  m_wallMat: {fileID: 2100000, guid: 9cba7c41e77ec2146aa85ad84f25cef8, type: 2}
+  m_transparentWallMat: {fileID: 2100000, guid: d167a759bbb23da4aa7d713d964a2c99, type: 2}
+  m_popWarningObj: {fileID: 3267999291431000279, guid: cfdf9739b1cea2a46a6fa47007cbc85a, type: 3}
+  m_atkObjMat: {fileID: 2100000, guid: 10219921a22385346a05c4c9f5a9a45a, type: 2}
+  m_movePlayerAtkObjMat: {fileID: 2100000, guid: 34a9be3abd7801048aefc5d7259729c8, type: 2}
+  m_warningMat: {fileID: 2100000, guid: 57eb22d144bf15d4d9feb3717c00b5e7, type: 2}
+  m_scaffoldObj: {fileID: 5407769491101770005, guid: 615009d4346f8fc40b9dcc400cf06018, type: 3}
+  m_scaffoldObjCount: 100
+  m_simpleAtkObj: {fileID: 1280706710163144674, guid: b2e2766254d33184283ffe7d8c6e89c2, type: 3}
+  m_simpleAtkObjCount: 250
+  m_simpleAtkObjBasicSize: 3
+  m_rangeAtkObj: {fileID: 2680253368517206058, guid: 3c8900df6f38bdd4aa15baaa3c6693ef, type: 3}
+  m_rangeAtkObjCount: 30
+  m_rangeAtkWarnTime: 1
+  m_rangeAtkTime: 1
+  m_popAtkMaxHeight: 0
+  m_popAtkActiveTime: 1.5
+  m_popAtkSpeed: 150
+  m_popAtkWarnTime: 0.5
+  m_gravityAtkSpeed: 20

@@ -233,7 +233,13 @@ public class PlayerController : MonoBehaviour
         m_uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         m_rigidbody = GetComponent<Rigidbody>();
 
-        m_charactorCode = GameManager.Instance.CharacterCode;
+        if (GameManager.Instance != null)
+        {
+            m_charactorCode = GameManager.Instance.CharacterCode;
+            //커서 상태 비활성화
+            GameManager.Instance.ChangeCursorState(false);
+        }
+
 
         //플래이어 위치 초기화
         ResetPlayerState();
@@ -247,8 +253,6 @@ public class PlayerController : MonoBehaviour
         //플래이어 스킨 생성
         GenViewPlayer();
 
-        //커서 상태 비활성화
-        GameManager.Instance.ChangeCursorState(false);
     }
 
     /// <summary>

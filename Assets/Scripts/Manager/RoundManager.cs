@@ -235,7 +235,7 @@ public class RoundManager : MonoBehaviour
     /// <summary>
     /// 공격하는 오브젝트가 생성될 위치
     /// </summary>
-    private Vector3 m_objBasicPos = new Vector3(300.0f, 0.0f, 0.0f);
+    private Vector3 m_objBasicPos = new Vector3(350.0f, 0.0f, 0.0f);
     /// <summary>
     /// 현재 플레이어가 사용하는 벽
     /// 12시 부터 시계방향으로 0, 1, 2, 3
@@ -462,17 +462,21 @@ public class RoundManager : MonoBehaviour
         switch (argIndex)
         {
             case 1:
-                return AtkType.SimpleAtk;
+                return AtkType.Simple;
             case 2:
-                return AtkType.BlueSimpleAtk;
+                return AtkType.BlueSimple;
             case 3:
-                return AtkType.PopAtk;
+                return AtkType.Pop;
             case 4:
-                return AtkType.RangeAtk;
+                return AtkType.Range;
             case 5:
-                return AtkType.GravityAtk;
+                return AtkType.Gravity;
             case 6:
                 return AtkType.Scaffold;
+            case 7:
+                return AtkType.GuidRange;
+            case 8:
+                return AtkType.ResetPosition;
             default:
                 Debug.Log(argIndex + " not allowed value");
                 return new AtkType();
@@ -542,7 +546,11 @@ public class RoundManager : MonoBehaviour
         //돈 지급
         if (argWinOrDefeat == true)
         {
-            GameManager.Instance.Money += (m_phase - 1) * 10;
+            GameManager.Instance.Money += (m_phase - 1) * 50;
+        }
+        else
+        {
+            GameManager.Instance.Money += (m_phase + 1) * 5;
         }
 
         ResetAllObj();
@@ -733,7 +741,7 @@ public class RoundManager : MonoBehaviour
         );
     }
     /// <summary>
-    /// 물체 생성
+    /// 공격
     /// </summary>
     /// <param name="argAtkType">타입</param>
     /// <param name="argPosition">위치</param>
@@ -745,23 +753,28 @@ public class RoundManager : MonoBehaviour
     {
         switch (argAtkType)
         {
-            case AtkType.BlueSimpleAtk:
+            case AtkType.BlueSimple:
                 SimpleAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), argSpeed, true);
                 return;
-            case AtkType.SimpleAtk:
+            case AtkType.Simple:
                 SimpleAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), argSpeed, false);
                 return;
-            case AtkType.PopAtk:
+            case AtkType.Pop:
                 AllWallPopAtk();
                 return;
-            case AtkType.RangeAtk:
-                RangeAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z));
+            case AtkType.Range:
+                RangeAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), false);
                 return;
-            case AtkType.GravityAtk:
+            case AtkType.Gravity:
                 GravityAtk(argRotation.z);
                 return;
             case AtkType.Scaffold:
                 Scaffold(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), argSpeed, argIsMove);
+                return;
+            case AtkType.GuidRange:
+                RangeAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), true);
+                return;
+            case AtkType.ResetPosition:
                 return;
             default:
                 Debug.Log("not allowed value");
@@ -794,7 +807,7 @@ public class RoundManager : MonoBehaviour
     /// <param name="argSize">생성 크기(공격 하는 오브젝트도 크기에 비례)</param>
     /// <param name="argWarnTime">공격 경고 시간</param>
     /// <param name="argAtkTime">공격 시간</param>
-    void RangeAtk(Vector3 argPosition, Vector3 argRotation, Vector3 argSize)
+    void RangeAtk(Vector3 argPosition, Vector3 argRotation, Vector3 argSize, bool argIsGuid)
     {
         RangeAtk _atk = ActiveRangeAtk();
         _atk.StartRangeAtk(m_rangeAtkWarnTime, m_rangeAtkTime);
@@ -802,6 +815,11 @@ public class RoundManager : MonoBehaviour
         _atk.transform.position = argPosition;
         _atk.transform.rotation = Quaternion.Euler(argRotation);
         _atk.transform.localScale = argSize;
+
+        if(argIsGuid == true)
+        {
+            _atk.gameObject.transform.LookAt(m_playerController.gameObject.transform);
+        }
 
         GameManager.Instance.SoundManager.PlayEffectSound(m_roundData.m_soundData.m_rangeAtk);
     }
@@ -981,6 +999,8 @@ public class RoundManager : MonoBehaviour
             yield return null;
         }
     }
+
+
 
     /// <summary>
     /// 단순 공격 활성화 큐로 이동
