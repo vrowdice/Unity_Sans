@@ -73,6 +73,11 @@ public class PlayerController : MonoBehaviour
 
     [Header("Player Infomation")]
     /// <summary>
+    /// 초기 플래이어 위치
+    /// </summary>
+    [SerializeField]
+    Vector3 m_playerResetPos = new Vector3();
+    /// <summary>
     /// 최대 체력
     /// </summary>
     [SerializeField]
@@ -509,11 +514,19 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
+    /// 플래이어 위치 초기화
+    /// </summary>
+    public void ResetPlayerPosition()
+    {
+        transform.position = m_playerResetPos;
+    }
+
+    /// <summary>
     /// 플레이어 상태 초기화
     /// </summary>
     public void ResetPlayerState()
     {
-        transform.position = new Vector3(0.0f, 4.0f, 0.0f);
+        ResetPlayerPosition();
         SetHp = m_maxHp;
         SetLateHp = m_maxHp;
         SetHp = m_hp;

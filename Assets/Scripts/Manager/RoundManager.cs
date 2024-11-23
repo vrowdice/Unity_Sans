@@ -1000,7 +1000,13 @@ public class RoundManager : MonoBehaviour
         }
     }
 
-
+    /// <summary>
+    /// 초기화 공격
+    /// </summary>
+    void ResetAtk()
+    {
+        m_playerController.ResetPlayerPosition();
+    }
 
     /// <summary>
     /// 단순 공격 활성화 큐로 이동
