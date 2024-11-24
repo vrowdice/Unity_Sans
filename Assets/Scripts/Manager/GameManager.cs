@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 현재 사용중인 캐릭터 인덱스
     /// </summary>
-    private int m_characterKey = 40001;
+    private int m_characterKey = 10001;
     /// <summary>
     /// 현재 씬 캔버스의 트렌스폼
     /// </summary>
@@ -95,7 +95,7 @@ public class GameManager : MonoBehaviour
     /// 
     /// 저장 필요
     /// </summary>
-    private long m_money = 10000;
+    private long m_money = 10000000;
 
     private void Awake()
     {
@@ -167,25 +167,28 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void AwakeSetting()
     {
-        //싱글톤 세팅
+        // 싱글톤 세팅
         if (g_gameDataManager == null)
         {
             g_gameDataManager = this;
-            SceneManager.sceneLoaded -= SceneLoaded;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
+            return;
         }
-        DontDestroyOnLoad(gameObject);
 
-        //씬 로드하는 경우
+        // 중복 등록 방지: 이벤트 제거 후 등록
+        SceneManager.sceneLoaded -= SceneLoaded;
         SceneManager.sceneLoaded += SceneLoaded;
-        //사운드 매니저 할당
+
+        // 사운드 매니저 할당
         m_soundManager = GetComponent<SoundManager>();
-        //커서 상태 변경
+        // 커서 상태 변경
         ChangeCursorState(true);
     }
+
 
     /// <summary>
     /// 라운드 정보 가져오기
@@ -253,9 +256,15 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 메인 게임 씬으로 이동
     /// </summary>
-    public void GoMainScene(int argRoundIndex)
+    public void GoMainScene(int argRoundKey)
     {
-        m_roundIndex = argRoundIndex;
+        if(GetRoundData(argRoundKey).m_isCanPlay == false)
+        {
+            Alert("This Round can't play at now!!");
+            return;
+        }
+
+        m_roundIndex = argRoundKey;
         MoveSceneAsName("Main", false);
     }
     /// <summary>

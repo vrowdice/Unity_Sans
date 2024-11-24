@@ -143,7 +143,7 @@ public class StoreManager : MonoBehaviour
     /// </summary>
     public void RollCharacter()
     {
-        if(GameManager.Instance.Money <= m_gachaMoney)
+        if(GameManager.Instance.Money < m_gachaMoney)
         {
             GameManager.Instance.Alert("Not Enough Money!");
             return;

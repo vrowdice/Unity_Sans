@@ -33,4 +33,8 @@ public class SoundData : ScriptableObject
     /// 원거리 공격 효과음
     /// </summary>
     public AudioClip m_rangeAtk = null;
+    /// <summary>
+    /// 리셋 공격 효과음
+    /// </summary>
+    public AudioClip m_resetAtk = null;
 }

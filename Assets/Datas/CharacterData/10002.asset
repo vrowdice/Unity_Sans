@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: 10002
   m_EditorClassIdentifier: 
   m_name: Legend2
-  m_object: {fileID: 0}
+  m_object: {fileID: 9189591811717085313, guid: c7f4af23dacf2404593789592db1699c, type: 3}
   m_type: 0

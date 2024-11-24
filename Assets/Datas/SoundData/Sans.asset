@@ -19,3 +19,4 @@ MonoBehaviour:
   m_gravityAtk: {fileID: 8300000, guid: 1613c28d47178de4f89223d8d63a070a, type: 3}
   m_popAtk: {fileID: 8300000, guid: ea08741c210ae7e4fb6233b6f02638c3, type: 3}
   m_rangeAtk: {fileID: 8300000, guid: af0c7b36909bf7c4285895d4e71cc2f7, type: 3}
+  m_resetAtk: {fileID: 8300000, guid: 7984fd645e7abde4c9b0501cd486a708, type: 3}

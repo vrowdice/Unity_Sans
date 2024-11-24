@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: 20002
   m_EditorClassIdentifier: 
   m_name: Epic2
-  m_object: {fileID: 0}
+  m_object: {fileID: 6809794817779303525, guid: cd9ba8521fd9c924d86d9becfc4f8781, type: 3}
   m_type: 1

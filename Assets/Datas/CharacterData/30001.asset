@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: 30001
   m_EditorClassIdentifier: 
   m_name: Rare1
-  m_object: {fileID: 0}
+  m_object: {fileID: 3909337525523016407, guid: 46d2e9608490eec40a10a82cc5505fe5, type: 3}
   m_type: 2

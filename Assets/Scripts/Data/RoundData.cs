@@ -12,9 +12,9 @@ public class RoundData : ScriptableObject
     /// </summary>
     public string m_name = string.Empty;
     /// <summary>
-    /// 라운드 표시 여부
+    /// 라운드 플래이 가능 여부
     /// </summary>
-    public bool m_isVisible = true;
+    public bool m_isCanPlay = true;
     /// <summary>
     /// 라운드 이미지
     /// </summary>

@@ -283,6 +283,10 @@ public class RoundManager : MonoBehaviour
         MoveObj();
         TimingCheck();
     }
+    private void Update()
+    {
+        
+    }
 
     /// <summary>
     /// 초기 설정
@@ -775,6 +779,7 @@ public class RoundManager : MonoBehaviour
                 RangeAtk(argPosition, argRotation, new Vector3(argSize.x, argSize.y, argSize.z), true);
                 return;
             case AtkType.ResetPosition:
+                ResetAtk();
                 return;
             default:
                 Debug.Log("not allowed value");
@@ -1006,6 +1011,8 @@ public class RoundManager : MonoBehaviour
     void ResetAtk()
     {
         m_playerController.ResetPlayerPosition();
+        ResetAllObj();
+        GameManager.Instance.SoundManager.PlayEffectSound(m_roundData.m_soundData.m_resetAtk);
     }
 
     /// <summary>
