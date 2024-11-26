@@ -22,7 +22,7 @@ public class RoundData : ScriptableObject
     /// <summary>
     /// 패이즈가 시작되는 시간 조정
     /// </summary>
-    public List<float> m_phaseStartTimeSet = new List<float>();
+    public List<float> m_phaseStartTime = new List<float>();
     /// <summary>
     /// 페이즈가 끝나는 시간
     /// </summary>

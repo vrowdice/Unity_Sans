@@ -46,8 +46,8 @@ MonoBehaviour:
   m_storePanelPrefeb: {fileID: 3299795832205947443, guid: 6b08a7fecc3cf1b468bbe238ef584a2c, type: 3}
   m_characterSelectBtnPrefeb: {fileID: 8727545742734564187, guid: e3016cce38abb96448d764dbf2b2d972, type: 3}
   m_proWeightList:
-  - 10
   - 30
+  - 50
   - 100
   - 200
   m_gachaMoney: 500

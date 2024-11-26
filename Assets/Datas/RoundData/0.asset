@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: 0
   m_EditorClassIdentifier: 
   m_name: Sans
-  m_isVisible: 1
+  m_isCanPlay: 1
   m_sampleSprite: {fileID: 21300000, guid: 1e6c71236bf33d5418dd3aac38997a50, type: 3}
-  m_phaseStartTimeSet:
+  m_phaseStartTime:
   - 2
   - 2
   - 2

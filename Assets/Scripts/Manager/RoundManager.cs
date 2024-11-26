@@ -614,7 +614,7 @@ public class RoundManager : MonoBehaviour
                 }
 
                 // 처음 실행 시
-                if (item.m_repeatStartTime + m_roundData.m_phaseStartTimeSet[m_phase] <= m_phaseTime && item.m_toRepeatTime == 0.0f)
+                if (item.m_repeatStartTime + m_roundData.m_phaseStartTime[m_phase] <= m_phaseTime && item.m_toRepeatTime == 0.0f)
                 {
                     item.m_toRepeatTime = m_phaseTime + item.m_repeatTime;
                     GenObjAsAtkData(item.m_atkData);
@@ -639,7 +639,7 @@ public class RoundManager : MonoBehaviour
             {
                 return;
             }
-            if (m_atkDataList[m_atkIndex].m_genTime + m_roundData.m_phaseStartTimeSet[m_phase] <= m_phaseTime)
+            if (m_atkDataList[m_atkIndex].m_genTime + m_roundData.m_phaseStartTime[m_phase] <= m_phaseTime)
             {
                 GenObjAsAtkData(m_atkDataList[m_atkIndex]);
                 m_atkIndex++;
