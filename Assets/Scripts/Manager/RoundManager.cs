@@ -280,12 +280,11 @@ public class RoundManager : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        MoveObj();
         TimingCheck();
     }
     private void Update()
     {
-        
+        MoveObj();
     }
 
     /// <summary>
@@ -528,7 +527,7 @@ public class RoundManager : MonoBehaviour
     {
         ResetAllObj();
         
-        m_uIObjManager.SetRecoverCountTextObj(m_playerController.SetRecoverCount);
+        m_uIObjManager.SetRecoverCountTextObj(m_playerController.RecoverCount);
 
         m_phase++;
         m_phaseTime = 0.0f;
@@ -678,7 +677,7 @@ public class RoundManager : MonoBehaviour
             }
             if (item.m_isMove)
             {
-                item.transform.Translate(Vector3.forward * item.m_speed * Time.fixedDeltaTime);
+                item.transform.Translate(Vector3.forward * item.m_speed * Time.deltaTime);
 
                 if (item.transform.position.x <= -m_wallHalfSize * 2 ||
                     item.transform.position.x >= m_wallHalfSize * 2 ||
@@ -703,7 +702,7 @@ public class RoundManager : MonoBehaviour
             }
             if (item.m_isMove)
             {
-                item.transform.Translate(Vector3.forward * item.m_speed * Time.fixedDeltaTime);
+                item.transform.Translate(Vector3.forward * item.m_speed * Time.deltaTime);
 
                 if (item.transform.position.x <= -m_wallHalfSize * 2 ||
                     item.transform.position.x >= m_wallHalfSize * 2 ||
@@ -958,43 +957,34 @@ public class RoundManager : MonoBehaviour
         }
         transform.rotation = targetRotation;
     }
-    /// <summary>
-    /// 중력 공격
-    /// </summary>
-    /// <param name="argDir">중력 공격 방향</param>
-    /// <returns>none</returns>
     IEnumerator IEGravityAtk()
     {
         m_ascensionCompleteFlag = true;
 
         while (true)
         {
-            // 상승 상태일 때
+            // 상승 상태
             if (m_ascensionCompleteFlag && m_playerController.transform.position.y <
                 m_wallCenterPos.position.y - 1.0f)
             {
-                m_playerController.SetCanMoveFlage = false;
-                m_playerController.transform.position = Vector3.MoveTowards(
-                    m_playerController.transform.position,
-                    new Vector3(m_playerController.transform.position.x,
-                    m_wallCenterPos.position.y,
-                    m_playerController.transform.position.z),
-                    m_gravityAtkSpeed * Time.deltaTime);
+                m_playerController.CanMoveFlage = false;
+                m_playerController.transform.Translate(Vector3.up * m_gravityAtkSpeed * Time.deltaTime);
             }
             else
             {
                 m_ascensionCompleteFlag = false;
 
-                // 하강 상태일 때
+                // 하강 상태
                 m_playerController.transform.position = Vector3.MoveTowards(
                     m_playerController.transform.position,
                     new Vector3(m_playerController.transform.position.x,
                     0f,
                     m_playerController.transform.position.z),
                     m_gravityAtkSpeed * 4 * Time.deltaTime);
+
                 if (m_playerController.transform.position.y <= 0.0f)
                 {
-                    m_playerController.SetCanMoveFlage = true;
+                    m_playerController.CanMoveFlage = true;
 
                     GameManager.Instance.SoundManager.PlayEffectSound(m_roundData.m_soundData.m_hitGround);
 
@@ -1004,6 +994,7 @@ public class RoundManager : MonoBehaviour
             yield return null;
         }
     }
+
 
     /// <summary>
     /// 초기화 공격

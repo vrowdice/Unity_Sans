@@ -290,7 +290,7 @@ public class PlayerController : MonoBehaviour
         if (m_canDamageFlage)
         {
             m_canDamageFlage = false;
-            SetLateHp += argManageHp;
+            LateHp += argManageHp;
             Invoke("CanDamageFlageTrue", m_canDamageTime);
 
             GameManager.Instance.SoundManager.PlayEffectSound(RoundManager.Instance.SetRoundData.m_soundData.m_hit);
@@ -301,16 +301,16 @@ public class PlayerController : MonoBehaviour
     /// 체력 회복
     /// </summary>
     /// <param name="argManageHp">hp 증가</param>
-    void Recover(float argManageHp)
+    public void Recover(float argManageHp, bool argIsCheat)
     {
-        if(m_recoverCount <= 0)
+        if(m_recoverCount <= 0 && argIsCheat == false)
         {
             return;
         }
 
-        SetRecoverCount--;
-        SetHp += argManageHp;
-        SetLateHp += argManageHp;
+        RecoverCount--;
+        Hp += argManageHp;
+        LateHp += argManageHp;
 
         GameManager.Instance.SoundManager.PlayEffectSound(RoundManager.Instance.SetRoundData.m_soundData.m_heal);
     }
@@ -323,20 +323,22 @@ public class PlayerController : MonoBehaviour
     {
         while (true)
         {
-            float _healthDifference = SetHp - SetLateHp;
+            float _healthDifference = Hp - LateHp;
             if (_healthDifference > 0.1f)
             {
-                if (SetHp > SetLateHp)
+                if (Hp > LateHp)
                 {
-                    SetHp -= 1;
+                    Hp -= 1;
                 }
             }
             else
             {
                 yield return null;
             }
+            float _syncInterval = _healthDifference > 15.0f
+                ? Mathf.Max(0.1f, 4.0f / _healthDifference)
+                : m_maxHpSyncTime;
 
-            float _syncInterval = _healthDifference > 15.0f ? Mathf.Max(0.1f, 4.0f / _healthDifference) : m_maxHpSyncTime;
             yield return new WaitForSeconds(_syncInterval);
         }
     }
@@ -455,7 +457,7 @@ public class PlayerController : MonoBehaviour
                 }
                 else if (m_InteractBtnObj.name == "RecoverBtn")
                 {
-                    Recover(m_recoverHp);
+                    Recover(m_recoverHp, false);
                 }
             }
         }
@@ -502,14 +504,14 @@ public class PlayerController : MonoBehaviour
     {
         if(argState == true)
         {
-            SetIsCanJumpFlag = true;
-            SetIsGroundFlag = true;
+            IsCanJumpFlag = true;
+            IsGroundFlag = true;
             m_jumpGauge = m_maxjumpGauge;
         }
         else
         {
-            SetIsCanJumpFlag = false;
-            SetIsGroundFlag = false;
+            IsCanJumpFlag = false;
+            IsGroundFlag = false;
         }
     }
 
@@ -527,62 +529,60 @@ public class PlayerController : MonoBehaviour
     public void ResetPlayerState()
     {
         ResetPlayerPosition();
-        SetHp = m_maxHp;
-        SetLateHp = m_maxHp;
-        SetHp = m_hp;
-        SetLateHp = m_lateHp;
-        SetRecoverCount = m_maxRecoverCount;
+        Hp = m_maxHp;
+        LateHp = m_maxHp;
+        RecoverCount = m_maxRecoverCount;
     }
 
-    public Material GetStandardInteractMat
+    public Material StandardInteractMat
     {
         get { return m_standardInteractMat; }
     }
-    public Material GetActiveInteractMat
+    public Material ActiveInteractMat
     {
         get { return m_activeInteractMat; }
     }
-    public GameObject SetInteractBtnObj
+    public GameObject InteractBtnObj
     {
         get { return m_InteractBtnObj; }
         set { m_InteractBtnObj = value; }
     }
-    public Scaffold SetGroundScaffold
+    public Scaffold GroundScaffold
     {
         get { return m_groundScaffold; }
         set { m_groundScaffold = value; }
     }
-    public bool SetIsCanDamageFlage
+    public bool IsCanDamageFlage
     {
         get { return m_canDamageFlage; }
         set { m_canDamageFlage = value; }
     }
-    public bool SetIsCanJumpFlag
+    public bool IsCanJumpFlag
     {
         get { return m_canJumpFlag; }
         set { m_canJumpFlag = value; }
     }
-    public bool SetIsGroundFlag
+    public bool IsGroundFlag
     {
         get { return m_groundFlag; }
         set { m_groundFlag = value; }
     }
-    public bool SetCanMoveFlage
+    public bool CanMoveFlage
     {
         get { return m_canMoveFlag; }
         set { m_canMoveFlag = value; }
     }
-    public bool SetPlayerControllFlag
+    public bool PlayerControllFlag
     {
         get { return m_playerControllFlag; }
         set { m_playerControllFlag = value; }
     }
-    public bool SetGravity
+    public bool Gravity
     {
         get { return m_rigidbody.useGravity; }
         set { m_rigidbody.useGravity = value; }
     }
-    public int SetRecoverCount
+    public int RecoverCount
     {
         get { return m_recoverCount; }
         set
@@ -601,42 +601,41 @@ public class PlayerController : MonoBehaviour
             RoundManager.Instance.GetUIObjManager.SetRecoverCountTextObj(m_recoverCount);
         }
     }
-    public float SetHp
+    public float Hp
     {
         get 
         { 
             return m_hp; 
         }
-        set 
+        private set
         {
             m_hp = value;
             if (m_hp <= 0)
             {
                 RoundManager.Instance.GameOver(false);
             }
-            else if(m_hp >= m_maxHp)
+            else if(m_hp > m_maxHp)
             {
                 m_hp = m_maxHp;
             }
             m_uiManager.HpSlider(m_hp);
         }
     }
-    public float SetLateHp
+    public float LateHp
     {
         get
         {
             return m_lateHp;
         }
-        set
+        private set
         {
             m_lateHp = value;
-
             if (m_lateHp <= 1)
             {
                 m_lateHp = 1;
-                SetHp -= 1;
+                Hp -= 1;
             }
-            else if (m_lateHp >= m_maxHp)
+            else if (m_lateHp > m_maxHp)
             {
                 m_lateHp = m_maxHp;
             }

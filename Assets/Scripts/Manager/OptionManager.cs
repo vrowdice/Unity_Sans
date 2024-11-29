@@ -94,7 +94,7 @@ public class OptionManager : MonoBehaviour
 
             if (RoundManager.Instance != null)
             {
-                RoundManager.Instance.GetPlayerController.SetPlayerControllFlag = false;
+                RoundManager.Instance.GetPlayerController.PlayerControllFlag = false;
             }
             Time.timeScale = 0;
         }
@@ -105,7 +105,7 @@ public class OptionManager : MonoBehaviour
 
             if (RoundManager.Instance != null)
             {
-                RoundManager.Instance.GetPlayerController.SetPlayerControllFlag = true;
+                RoundManager.Instance.GetPlayerController.PlayerControllFlag = true;
             }
             Time.timeScale = 1;
         }
