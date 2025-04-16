@@ -1,4 +1,4 @@
-# Unity Sans
+# 🎮 Unity Sans
 
 ## Overview
 Unity Sans is a 3D remake of the iconic Sans boss fight from *Undertale*, recreated in Unity. This fan project reimagines the fast-paced and pattern-heavy battle with new visuals and mechanics while staying faithful to the original game's design.
@@ -24,7 +24,7 @@ Suggestions and feedback are always welcome! Feel free to open an issue or pull 
 ## License
 This project is for educational and fan-use only. All rights to *Undertale* and Sans belong to Toby Fox.
 
-# Unity Sans
+# 🎮 Unity Sans
 
 ## 개요
 Unity Sans는 *Undertale*의 상징적인 보스전인 Sans 전투를 Unity에서 3D로 재현한 팬 프로젝트입니다. 빠른 속도와 복잡한 패턴으로 유명한 원작 전투를 시각적으로 새롭게 구현하면서도 원작의 감성을 그대로 담았습니다.
@@ -50,4 +50,4 @@ Unity Sans는 *Undertale*의 상징적인 보스전인 Sans 전투를 Unity에�
 ## 라이선스
 이 프로젝트는 교육용 및 팬 제작 목적으로 제작되었습니다. *Undertale* 및 Sans에 대한 모든 권리는 Toby Fox에게 있습니다.
 
-## YOUTUBE LINK: https://youtu.be/0g1x7rSeNRw
+## 📺 YOUTUBE LINK: https://youtu.be/0g1x7rSeNRw
