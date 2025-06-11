@@ -51,4 +51,4 @@ Unity Sans는 *Undertale*의 상징적인 보스전인 Sans 전투를 Unity에�
 이 프로젝트는 교육용 및 팬 제작 목적으로 제작되었습니다. *Undertale* 및 Sans에 대한 모든 권리는 Toby Fox에게 있습니다.
 
 ## 📺 YOUTUBE LINK: https://youtu.be/0g1x7rSeNRw
-## DOCUMENT: https://github.com/vrowdice/GameDocuments
+## DOCUMENT: https://github.com/vrowdice/GameDocuments/blob/main/ko/the_avoider_concept_design.pdf
